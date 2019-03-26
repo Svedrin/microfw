@@ -5,6 +5,7 @@
 #
 # Implicit rules:
 # * ICMP(6) is always allowed
+# * traffic related to already-established sessions is always allowed
 # * for inbound traffic, implicit reject (everything not accepted here is rejected)
 # * for outbound traffic originating from the Firewall itself, implicit accept (and really no way
 #   to define rules for that either)
