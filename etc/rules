@@ -1,11 +1,13 @@
 # Zone: ALL does _not_ include FW
 #
-# Src-Zone      Dest-Zone        Src-Address          Dst-Address            Action
+# Src-Zone      Dest-Zone        Src-Address          Dst-Address            Service        Action
 
-ext             FW               ALL                  ALL                    reject
-ext             ALL              ALL                  ALL                    reject
+ext             FW               ALL                  ALL                    ssh            accept
+ext             FW               ALL                  ALL                    ALL            reject
+ext             ALL              ALL                  ALL                    ALL            reject
 
-int             FW               ALL                  ALL                    accept
-int             int              ALL                  ALL                    accept
-int             ext              lan_home             google                 accept
-int             ext              ALL                  ALL                    reject
+int             FW               ALL                  ALL                    ALL            accept
+int             int              ALL                  ALL                    ALL            accept
+int             ext              lan_home             google                 http           accept
+int             ext              lan_home             google                 https          accept
+int             ext              ALL                  ALL                    ALL            reject
