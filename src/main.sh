@@ -101,7 +101,7 @@ echo ip6tables -A reject -j REJECT --reject-with icmp6-adm-prohibited
 # interface routed there
 ZONES=$(
     # Get the second column of the interfaces table, but unique values only
-    grep . ${ETC_DIR}/$1/interfaces | grep -v '^#' | while read iface zone; do
+    grep . ${ETC_DIR}/$1/interfaces | grep -v '^#' | while read iface zone protocols; do
         echo $zone
     done | sort | uniq
 )
@@ -121,8 +121,14 @@ echo "iptables  -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT"
 echo "ip6tables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT"
 
 
-# Route incoming traffic to zone-specific input and forward chains
-grep . ${ETC_DIR}/$1/interfaces | grep -v '^#' | while read iface zone; do
+grep . ${ETC_DIR}/$1/interfaces | grep -v '^#' | while read iface zone protocols; do
+    # Generate INPUT rules for other protocols
+    for proto in ${protocols//,/ }; do
+        echo "iptables  -A INPUT   -i $iface -p $proto -j ACCEPT"
+        echo "ip6tables -A INPUT   -i $iface -p $proto -j ACCEPT"
+    done
+
+    # Route incoming traffic to zone-specific input chains
     echo "iptables  -A INPUT   -i $iface -j ${zone}_inp"
     echo "ip6tables -A INPUT   -i $iface -j ${zone}_inp"
 
@@ -131,6 +137,7 @@ grep . ${ETC_DIR}/$1/interfaces | grep -v '^#' | while read iface zone; do
     echo "iptables  -A FORWARD -i $iface -o $iface -j drop"
     echo "ip6tables -A FORWARD -i $iface -o $iface -j drop"
 
+    # Route incoming traffic to zone-specific forward chains
     echo "iptables  -A FORWARD -i $iface -j ${zone}_fwd"
     echo "ip6tables -A FORWARD -i $iface -j ${zone}_fwd"
 done

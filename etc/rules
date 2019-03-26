@@ -6,7 +6,7 @@ ext             FW               ALL                  ALL                    ssh
 ext             FW               ALL                  ALL                    ALL            reject
 ext             ALL              ALL                  ALL                    ALL            reject
 
-int             FW               ALL                  ALL                    ALL            accept
+int             FW               ALL                  ALL                    ALL            reject
 int             int              ALL                  ALL                    ALL            accept
 int             ext              lan_home             google                 http           accept
 int             ext              lan_home             google                 https          accept
