@@ -1,10 +1,13 @@
 # List of address objects.
+#
 # These addresses are used to define rules. Using address objects is mandatory
 # because we want to keep iptables and ip6tables in sync, so there will be no
-# IP addresses allowed in rules.
+# IP addresses allowed in the rules file.
+#
+# To leave a field blank, use a - sign.
 #
 # Address object name    IPv4 address              IPv6 address
 
-google.com               216.58.207.238            2a00:1450:400f:80c::200e
+google                   216.58.207.238            2a00:1450:400f:80c::200e
 
 lan_home                 192.168.0.0/24            -

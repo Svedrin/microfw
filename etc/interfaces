@@ -1,3 +1,12 @@
+# List of interfaces, the zone they belong to, and protocols that should be
+# allowed in addition to what's defined in the rules file.
+#
+# Note that protocols listed here will only be allowed to talk to the Firewall
+# itself, thus enabling VPN and routing protocols. They will not be allowed to
+# pass through the Firewall to other networks.
+#
+# If you need multiple protocols on a single interface, separate them by commas.
+#
 # Interface        Zone        Protocols
 
 eth0               ext         gre

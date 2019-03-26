@@ -1,3 +1,9 @@
+# List of services.
+#
+# Rules targeting specific services MUST refer to entries in this file.
+#
+# To leave a field blank, use a - sign.
+#
 # Name          TCP              UDP
 
 ssh             22               -

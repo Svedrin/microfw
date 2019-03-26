@@ -1,3 +1,27 @@
+# Firewall Rules.
+#
+# These will be applied verbatim for both IPv4 and IPv6.
+# As usual, first match decides what happens.
+#
+# Implicit rules:
+# * ICMP(6) is always allowed
+# * for inbound traffic, implicit reject (everything not accepted here is rejected)
+# * for outbound traffic originating from the Firewall itself, implicit accept (and really no way
+#   to define rules for that either)
+#
+# Valid actions:
+# * accept+nat: Traffic is permitted and masqueraded (not yet implemented)
+# * accept:     Traffic is permitted
+# * reject:     Traffic is blocked, sender gets an error message
+# * drop:       Traffic is blocked, sender gets a timeout
+#
+# Zones are the ones you defined in the `interfaces` file, plus FW if you want to target
+# the Firewall itself (e.g. to accept SSH connections to it).
+#
+# Src-Address and Dst-Address columns MUST refer to entries in the `addresses` file, or ALL.
+# The Service column MUST refer to entries in the `services` file, or ALL.
+#
+#
 # Src-Zone      Dest-Zone        Src-Address          Dst-Address            Service        Action
 
 ext             FW               ALL                  ALL                    ssh            accept
