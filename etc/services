@@ -13,19 +13,22 @@ http            80               -
 dhcp            67               67
 dhcp-client     68               68
 kerberos        88               88
+ident           113
 ntp             123              123
 imap            143              -
 snmp            -                161
 bgp             179              179
 https           443              -
 cifs            445              -
-submission      636              -
+smtps           465              -
+submission      587              -
 rsync           873              -
 imaps           993              -
 openvpn         1194             1194
 mqtt            1883             1883
 nfs             2049             2049
 mysql           3306             -
+iax             4569             -
 munin           4949             -
 sip             5060             5060
 mdns            5353             5353
