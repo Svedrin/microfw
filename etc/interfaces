@@ -1,0 +1,6 @@
+# Interface        Zone
+
+eth0               ext
+eth1               int
+tun0               int
+docker0            int

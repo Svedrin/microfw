@@ -1,0 +1,8 @@
+# Src-Zone      Dest-Zone        Action
+
+ext             FW               reject
+ext             ALL              reject
+
+int             FW               accept
+int             int              accept
+int             ext              reject
