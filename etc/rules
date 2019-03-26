@@ -1,8 +1,11 @@
-# Src-Zone      Dest-Zone        Action
+# Zone: ALL does _not_ include FW
+#
+# Src-Zone      Dest-Zone        Src-Address          Dst-Address            Action
 
-ext             FW               reject
-ext             ALL              reject
+ext             FW               ALL                  ALL                    reject
+ext             ALL              ALL                  ALL                    reject
 
-int             FW               accept
-int             int              accept
-int             ext              reject
+int             FW               ALL                  ALL                    accept
+int             int              ALL                  ALL                    accept
+int             ext              lan_home             google                 accept
+int             ext              ALL                  ALL                    reject

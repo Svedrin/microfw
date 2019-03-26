@@ -106,7 +106,7 @@ done
 
 
 # parse rules. those now only need to be filled into the chains defined earlier
-grep . ${ETC_DIR}/$1/rules | grep -v '^#' | while read srczone dstzone action; do
+grep . ${ETC_DIR}/$1/rules | grep -v '^#' | while read srczone dstzone srcaddr dstaddr action; do
     if [ "$action" != "accept" ] && [ "$action" != "reject" ] && [ "$action" != "drop" ]; then
         echo >&2 "Invalid action '$action' in rule"
         exit 1
@@ -114,22 +114,43 @@ grep . ${ETC_DIR}/$1/rules | grep -v '^#' | while read srczone dstzone action; d
 
     # If dst is FW, then we're talking about the INPUT chain
     if [ "$dstzone" = "FW" ]; then
-        echo "iptables  -A ${srczone}_inp -j $action"
-        echo "ip6tables -A ${srczone}_inp -j $action"
+        ADDR_FILTER=""
+        if [ "$srcaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${srcaddr}_v4 src"; fi
+        if [ "$dstaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${dstaddr}_v4 dst"; fi
+        echo "iptables  -A ${srczone}_inp $ADDR_FILTER -j $action"
+
+        ADDR_FILTER=""
+        if [ "$srcaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${srcaddr}_v6 src"; fi
+        if [ "$dstaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${dstaddr}_v6 dst"; fi
+        echo "ip6tables -A ${srczone}_inp $ADDR_FILTER -j $action"
 
     # If dst is ALL, add rules for all interfaces
     elif [ "$dstzone" = "ALL" ]; then
         grep . ${ETC_DIR}/$1/interfaces | grep -v '^#' | while read iface zone; do
-            echo "iptables  -A ${srczone}_fwd -o ${iface} -j $action"
-            echo "ip6tables -A ${srczone}_fwd -o ${iface} -j $action"
+            ADDR_FILTER=""
+            if [ "$srcaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${srcaddr}_v4 src"; fi
+            if [ "$dstaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${dstaddr}_v4 dst"; fi
+            echo "iptables  -A ${srczone}_fwd -o ${iface} $ADDR_FILTER -j $action"
+
+            ADDR_FILTER=""
+            if [ "$srcaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${srcaddr}_v6 src"; fi
+            if [ "$dstaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${dstaddr}_v6 dst"; fi
+            echo "ip6tables -A ${srczone}_fwd -o ${iface} $ADDR_FILTER -j $action"
         done
 
     # Otherwise, add rules for all interfaces in the given zone
     else
         grep . ${ETC_DIR}/$1/interfaces | grep -v '^#' | while read iface zone; do
             if [ "$dstzone" = "$zone" ]; then
-                echo "iptables  -A ${srczone}_fwd -o ${iface} -j $action"
-                echo "ip6tables -A ${srczone}_fwd -o ${iface} -j $action"
+                ADDR_FILTER=""
+                if [ "$srcaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${srcaddr}_v4 src"; fi
+                if [ "$dstaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${dstaddr}_v4 dst"; fi
+                echo "iptables  -A ${srczone}_fwd -o ${iface} $ADDR_FILTER -j $action"
+
+                ADDR_FILTER=""
+                if [ "$srcaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${srcaddr}_v6 src"; fi
+                if [ "$dstaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${dstaddr}_v6 dst"; fi
+                echo "ip6tables -A ${srczone}_fwd -o ${iface} $ADDR_FILTER -j $action"
             fi
         done
     fi
