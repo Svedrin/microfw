@@ -1,9 +1,6 @@
-# Zone: ALL does _not_ include FW
-#
 # Src-Zone      Dest-Zone        Src-Address          Dst-Address            Service        Action
 
 ext             FW               ALL                  ALL                    ssh            accept
-ext             FW               ALL                  ALL                    ALL            reject
 ext             ALL              ALL                  ALL                    ALL            reject
 
 int             FW               ALL                  ALL                    ALL            reject

@@ -191,8 +191,10 @@ grep . ${ETC_DIR}/$1/rules | grep -v '^#' | while read srczone dstzone srcaddr d
     if [ "$dstzone" = "FW" ]; then
         gen_iptables_commands "${srczone}_inp" "" "$srcaddr" "$dstaddr" "$service" "$action"
 
-    # If dst is ALL, add rules for all interfaces
+    # If dst is ALL, add rules for INPUT + all interfaces
     elif [ "$dstzone" = "ALL" ]; then
+        gen_iptables_commands "${srczone}_inp" "" "$srcaddr" "$dstaddr" "$service" "$action"
+
         grep . ${ETC_DIR}/$1/interfaces | grep -v '^#' | while read iface zone; do
             gen_iptables_commands "${srczone}_fwd" "-o ${iface}" "$srcaddr" "$dstaddr" "$service" "$action"
         done
