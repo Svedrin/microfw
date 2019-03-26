@@ -6,6 +6,10 @@ set -u
 # ETC_DIR="/etc/microfw"
 ETC_DIR="nodes"
 
+echo "#!/bin/bash"
+echo "set -e"
+echo "set -u"
+
 # set sane defaults: Delete all rules and user-defined chains, then set the
 # policies to ACCEPT. we will add reject rules down the line, setting the
 # policy to ACCEPT means that the admin can get things to work using
@@ -203,3 +207,11 @@ echo "ip6tables -A INPUT   -j reject"
 
 echo "iptables  -A FORWARD -j reject"
 echo "ip6tables -A FORWARD -j reject"
+
+echo 'echo "REVERTING IN 30 SECONDS, HIT ^c"'
+echo "sleep 25"
+echo 'echo "REVERTING IN 5 SECONDS, HIT ^c"'
+echo "sleep 5"
+
+echo "iptables -F"
+echo "iptables -X"
