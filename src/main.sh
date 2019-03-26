@@ -145,10 +145,10 @@ function gen_iptables_commands() {
     if [ "$dstaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${dstaddr}_v4 dst"; fi
 
     if [ "$service" != "ALL" ]; then
-        SERVICE_FILTER="-p tcp -m set --match-set ${service}_tcp src"
+        SERVICE_FILTER="-p tcp -m set --match-set ${service}_tcp dst"
         echo "iptables  -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
 
-        SERVICE_FILTER="-p udp -m set --match-set ${service}_udp src"
+        SERVICE_FILTER="-p udp -m set --match-set ${service}_udp dst"
         echo "iptables  -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
     else
         echo "iptables  -A ${chain} $filter $ADDR_FILTER -j $action"
@@ -159,10 +159,10 @@ function gen_iptables_commands() {
     if [ "$dstaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${dstaddr}_v6 dst"; fi
 
     if [ "$service" != "ALL" ]; then
-        SERVICE_FILTER="-p tcp -m set --match-set ${service}_tcp src"
+        SERVICE_FILTER="-p tcp -m set --match-set ${service}_tcp dst"
         echo "ip6tables -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
 
-        SERVICE_FILTER="-p udp -m set --match-set ${service}_udp src"
+        SERVICE_FILTER="-p udp -m set --match-set ${service}_udp dst"
         echo "ip6tables -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
     else
         echo "ip6tables -A ${chain} $filter $ADDR_FILTER -j $action"
