@@ -6,10 +6,39 @@ set -u
 # ETC_DIR="/etc/microfw"
 ETC_DIR="nodes"
 
-# Parse address objects into ipsets
+# set sane defaults: Delete all rules and user-defined chains, then set the
+# policies to ACCEPT. we will add reject rules down the line, setting the
+# policy to ACCEPT means that the admin can get things to work using
+# iptables -F manually.
+# Then, delete all ipsets.
+
+echo iptables -F
+echo iptables -X
+
+echo iptables -P INPUT   ACCEPT
+echo iptables -P FORWARD ACCEPT
+echo iptables -P OUTPUT  ACCEPT
+
+echo iptables -A INPUT   -p icmp -j ACCEPT
+echo iptables -A FORWARD -p icmp -j ACCEPT
+
+
+echo ip6tables -F
+echo ip6tables -X
+
+echo ip6tables -P INPUT   ACCEPT
+echo ip6tables -P FORWARD ACCEPT
+echo ip6tables -P OUTPUT  ACCEPT
+
+echo ip6tables -A INPUT   -p icmpv6 -j ACCEPT
+echo ip6tables -A FORWARD -p icmpv6 -j ACCEPT
+
 
 echo ipset flush
 echo ipset destroy
+
+
+# Parse address objects into ipsets
 
 grep . $ETC_DIR/addresses | grep -v '^#' | while read name v4addr v6addr; do
     if [ "$v4addr" != '-' ]; then
@@ -33,33 +62,6 @@ grep . $ETC_DIR/services | grep -v '^#' | while read name tcp udp; do
     fi
 done
 
-
-
-# set sane defaults: Delete all rules and user-defined chains, then set the
-# policies to ACCEPT. we will add reject rules down the line, setting the
-# policy to ACCEPT means that the admin can get things to work using
-# iptables -F manually.
-
-echo iptables -F
-echo iptables -X
-
-echo iptables -P INPUT   ACCEPT
-echo iptables -P FORWARD ACCEPT
-echo iptables -P OUTPUT  ACCEPT
-
-echo iptables -A INPUT   -p icmp -j ACCEPT
-echo iptables -A FORWARD -p icmp -j ACCEPT
-
-
-echo ip6tables -F
-echo ip6tables -X
-
-echo ip6tables -P INPUT   ACCEPT
-echo ip6tables -P FORWARD ACCEPT
-echo ip6tables -P OUTPUT  ACCEPT
-
-echo ip6tables -A INPUT   -p icmp6 -j ACCEPT
-echo ip6tables -A FORWARD -p icmp6 -j ACCEPT
 
 
 # define action chains
