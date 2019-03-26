@@ -52,12 +52,12 @@ grep . $ETC_DIR/addresses | grep -v '^#' | while read name v4addr v6addr; do
 done
 
 grep . $ETC_DIR/services | grep -v '^#' | while read name tcp udp; do
+    echo "ipset create ${name}_tcp bitmap:port range 1-65535"
+    echo "ipset create ${name}_udp bitmap:port range 1-65535"
     if [ "$tcp" != '-' ]; then
-        echo "ipset create ${name}_tcp bitmap:port range 1-65535"
         echo "ipset add    ${name}_tcp $tcp"
     fi
     if [ "$udp" != '-' ]; then
-        echo "ipset create ${name}_udp bitmap:port range 1-65535"
         echo "ipset add    ${name}_udp $udp"
     fi
 done
