@@ -3,4 +3,10 @@
 set -e
 set -u
 
-ansible-playbook -i ansible/hosts ansible/playbook.yml
+WHERE=""
+
+if [ -n "${1:-}" ]; then
+    WHERE="-l $1"
+fi
+
+ansible-playbook -i ansible/hosts $WHERE ansible/playbook.yml
