@@ -65,6 +65,7 @@ If you choose to install manually:
 * Copy `addresses`, `services`, `interfaces` and `rules` from the `etc` folder to `/etc/microfw` and edit them to your needs
 * `mkdir /var/lib/microfw`
 * `systemctl daemon-reload`, `systemctl enable microfw`
+* `microfw compile`, `systemctl start microfw`
 * `microfw apply`
 
 
