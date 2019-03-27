@@ -301,6 +301,11 @@ function generate_setup() {
         fi
     done
 
+    if [ -e ${ETC_DIR}/custom ]; then
+        echo "# Begin custom rules"
+        cat ${ETC_DIR}/custom
+        echo "# End custom rules"
+    fi
 
     # Add rules to reject traffic for which no allow rule exists
     echo "iptables  -A INPUT   -j reject"

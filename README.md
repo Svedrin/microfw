@@ -5,7 +5,7 @@ iptables firewall inspired by [shorewall](http://www.shorewall.net).
 
 # Configuration
 
-MicroFW uses four tables to read configuration data from. Examples of those can be found in the `etc` subdirectory.
+MicroFW uses five tables to read configuration data from. Examples of those can be found in the `etc` subdirectory.
 
 ## Services
 
@@ -48,6 +48,10 @@ Actions can be:
 *   `drop`: Block the traffic without letting the sender know. They'll just run into a timeout.
 
 Outbound traffic and ICMP traffic is always allowed.
+
+## Custom
+
+A list of custom rules to include in the configuration. Mostly useful for services to be exposed via DNAT.
 
 
 # Installation
