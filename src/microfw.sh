@@ -286,10 +286,10 @@ function apply() {
     $VAR_DIR/tear_down.sh
     $VAR_DIR/setup.sh
 
-    echo 'echo "REVERTING IN 30 SECONDS, HIT ^c"'
-    echo "sleep 25"
-    echo 'echo "REVERTING IN 5 SECONDS, HIT ^c"'
-    echo "sleep 5"
+    echo "REVERTING IN 30 SECONDS, HIT ^c"
+    sleep 25
+    echo "REVERTING IN 5 SECONDS, HIT ^c"
+    sleep 5
 
     $VAR_DIR/tear_down.sh
 }
