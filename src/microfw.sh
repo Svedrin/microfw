@@ -100,12 +100,12 @@ function generate_setup() {
     # Parse address objects into ipsets
 
     grep . $ETC_DIR/addresses | grep -v '^#' | while read name v4addr v6addr; do
+        echo "ipset create ${name}_v4 hash:net family inet  hashsize 1024 maxelem 65536"
+        echo "ipset create ${name}_v6 hash:net family inet6 hashsize 1024 maxelem 65536"
         if [ "$v4addr" != '-' ]; then
-            echo "ipset create ${name}_v4 hash:net family inet  hashsize 1024 maxelem 65536"
             echo "ipset add    ${name}_v4 $v4addr"
         fi
         if [ "$v6addr" != '-' ]; then
-            echo "ipset create ${name}_v6 hash:net family inet6 hashsize 1024 maxelem 65536"
             echo "ipset add    ${name}_v6 $v6addr"
         fi
     done
