@@ -1,0 +1,13 @@
+[Unit]
+Description=MicroFW
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/var/lib/microfw/setup.sh
+RemainAfterExit=true
+ExecStop=/var/lib/microfw/tear_down.sh
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target
