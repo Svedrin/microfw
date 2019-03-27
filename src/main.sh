@@ -3,13 +3,57 @@
 set -e
 set -u
 
-if [ -n "${1:-}" ]; then
-    ETC_DIR="nodes/$1"
-    VAR_DIR=$ETC_DIR
-else
-    ETC_DIR="/etc/microfw"
-    VAR_DIR="/var/lib/microfw"
+# Parse args
+
+COMMAND="invalid"
+ETC_DIR="/etc/microfw"
+VAR_DIR="/var/lib/microfw"
+
+while [ -n "${1:-}" ]; do
+    case "$1" in
+        -h|--help)
+            echo "Usage: $0 [-n <node>] <command>"
+            echo
+            echo "Options:"
+            echo " -h --help     This help text"
+            echo " -n --node     Read config from nodes/<node> subdir instead of /etc/microfw"
+            echo
+            echo "Commands:"
+            echo " compile       Update tear_down.sh and setup.sh"
+            echo " apply         compile, run setup, prompt for aliveness, run teardown on timeout"
+            exit 0
+            ;;
+
+        -n|--node)
+            ETC_DIR="nodes/$2"
+            VAR_DIR=$ETC_DIR
+            if [ ! -d "$ETC_DIR" ]; then
+                echo >&2 "$ETC_DIR does not exist"
+                exit 2
+            fi
+            shift
+            ;;
+
+        compile)
+            COMMAND="compile"
+            ;;
+
+        apply)
+            COMMAND="apply"
+            ;;
+
+        *)
+            echo "Unknown option $1, see --help"
+            exit 3
+    esac
+    shift
+done
+
+if [ "$COMMAND" = "invalid" ]; then
+    echo "Need a command, see --help"
+    exit 3
 fi
+
 
 function generate_tear_down() {
     echo '#!/bin/bash -eu'
@@ -246,4 +290,12 @@ function apply() {
     $VAR_DIR/tear_down.sh
 }
 
-compile
+
+case "$COMMAND" in
+    compile)
+        compile
+        ;;
+    apply)
+        apply
+        ;;
+esac
