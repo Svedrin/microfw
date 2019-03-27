@@ -69,6 +69,9 @@ function generate_tear_down() {
     echo iptables -F
     echo iptables -X
 
+    echo iptables -t nat -F
+    echo iptables -t nat -X
+
     echo iptables -P INPUT   ACCEPT
     echo iptables -P FORWARD ACCEPT
     echo iptables -P OUTPUT  ACCEPT
@@ -76,6 +79,9 @@ function generate_tear_down() {
 
     echo ip6tables -F
     echo ip6tables -X
+
+    echo ip6tables -t nat -F
+    echo ip6tables -t nat -X
 
     echo ip6tables -P INPUT   ACCEPT
     echo ip6tables -P FORWARD ACCEPT
@@ -168,8 +174,6 @@ function generate_setup() {
         echo "ip6tables -N ${zone}_inp"
         echo "iptables  -N ${zone}_fwd"
         echo "ip6tables -N ${zone}_fwd"
-        echo "iptables  -t nat -N ${zone}_fwd"
-        echo "ip6tables -t nat -N ${zone}_fwd"
     done
 
 
@@ -199,10 +203,6 @@ function generate_setup() {
         # Route incoming traffic to zone-specific forward chains
         echo "iptables  -A FORWARD -i $iface -j ${zone}_fwd"
         echo "ip6tables -A FORWARD -i $iface -j ${zone}_fwd"
-
-        # Route incoming traffic to zone-specific NAT chains
-        echo "iptables  -t nat -A POSTROUTING -i $iface -j ${zone}_fwd"
-        echo "ip6tables -t nat -A POSTROUTING -i $iface -j ${zone}_fwd"
     done
 
 
@@ -216,6 +216,10 @@ function generate_setup() {
         nat="false"
 
         if [ "$action" = "accept+nat" ]; then
+            if [ "$srcaddr" = "ALL" ]; then
+                echo >&2 "Source address cannot be ALL for an accept+nat rule"
+                exit 3
+            fi
             nat="true"
             action="accept"
         fi
@@ -228,18 +232,18 @@ function generate_setup() {
             SERVICE_FILTER="-p tcp -m set --match-set ${service}_tcp dst"
             echo "iptables  -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
             if [ "$nat" = "true" ]; then
-                echo "iptables  -t nat -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
+                echo "iptables  -t nat -A POSTROUTING $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
             fi
 
             SERVICE_FILTER="-p udp -m set --match-set ${service}_udp dst"
             echo "iptables  -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
             if [ "$nat" = "true" ]; then
-                echo "iptables  -t nat -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
+                echo "iptables  -t nat -A POSTROUTING $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
             fi
         else
             echo "iptables  -A ${chain} $filter $ADDR_FILTER -j $action"
             if [ "$nat" = "true" ]; then
-                echo "iptables  -t nat -A ${chain} $filter $ADDR_FILTER -j MASQUERADE"
+                echo "iptables  -t nat -A POSTROUTING $filter $ADDR_FILTER -j MASQUERADE"
             fi
         fi
 
@@ -251,18 +255,18 @@ function generate_setup() {
             SERVICE_FILTER="-p tcp -m set --match-set ${service}_tcp dst"
             echo "ip6tables -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
             if [ "$nat" = "true" ]; then
-                echo "ip6tables -t nat -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
+                echo "ip6tables -t nat -A POSTROUTING $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
             fi
 
             SERVICE_FILTER="-p udp -m set --match-set ${service}_udp dst"
             echo "ip6tables -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
             if [ "$nat" = "true" ]; then
-                echo "ip6tables -t nat -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
+                echo "ip6tables -t nat -A POSTROUTING $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
             fi
         else
             echo "ip6tables -A ${chain} $filter $ADDR_FILTER -j $action"
             if [ "$nat" = "true" ]; then
-                echo "ip6tables -t nat -A ${chain} $filter $ADDR_FILTER -j MASQUERADE"
+                echo "ip6tables -t nat -A POSTROUTING $filter $ADDR_FILTER -j MASQUERADE"
             fi
         fi
     }
