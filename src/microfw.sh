@@ -252,13 +252,13 @@ function generate_setup() {
         elif [ "$dstzone" = "ALL" ]; then
             gen_iptables_commands "${srczone}_inp" "" "$srcaddr" "$dstaddr" "$service" "$action"
 
-            grep . ${ETC_DIR}/interfaces | grep -v '^#' | while read iface zone; do
+            grep . ${ETC_DIR}/interfaces | grep -v '^#' | while read iface zone protocols; do
                 gen_iptables_commands "${srczone}_fwd" "-o ${iface}" "$srcaddr" "$dstaddr" "$service" "$action"
             done
 
         # Otherwise, add rules for all interfaces in the given zone
         else
-            grep . ${ETC_DIR}/interfaces | grep -v '^#' | while read iface zone; do
+            grep . ${ETC_DIR}/interfaces | grep -v '^#' | while read iface zone protocols; do
                 if [ "$dstzone" = "$zone" ]; then
                     gen_iptables_commands "${srczone}_fwd" "-o ${iface}" "$srcaddr" "$dstaddr" "$service" "$action"
                 fi
