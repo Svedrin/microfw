@@ -2,5 +2,53 @@
 - hosts: all
   remote_user: root
   tasks:
-  - name: herp the derp
-    ping:
+  - name: Install iptables
+    apt: name=iptables
+  - name: Install ipset
+    apt: name=ipset
+  - name: Copy systemd service
+    copy:
+      src:  ../etc/microfw.service
+      dest: /etc/systemd/system/
+      owner: root
+      group: root
+      mode: 0644
+  - name: Copy microfw.sh
+    copy:
+      src:  ../src/microfw.sh
+      dest: /usr/local/sbin/microfw
+      owner: root
+      group: root
+      mode: 0755
+  - name: mkdir /etc/microfw
+    file: path=/etc/microfw/ state=directory
+  - name: Copy addresses
+    copy:
+      src:  ../nodes/addresses
+      dest: /etc/microfw/
+      owner: root
+      group: root
+      mode: 0644
+  - name: Copy services
+    copy:
+      src:  ../nodes/services
+      dest: /etc/microfw/
+      owner: root
+      group: root
+      mode: 0644
+  - name: Copy interfaces
+    copy:
+      src:  "../nodes/{{ ansible_facts['hostname'] }}/interfaces"
+      dest: /etc/microfw/
+      owner: root
+      group: root
+      mode: 0644
+  - name: Copy rules
+    copy:
+      src:  "../nodes/{{ ansible_facts['hostname'] }}/rules"
+      dest: /etc/microfw/
+      owner: root
+      group: root
+      mode: 0644
+  - name: run compile
+    command: microfw compile
