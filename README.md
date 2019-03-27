@@ -2,8 +2,6 @@
 
 iptables firewall inspired by [shorewall](http://www.shorewall.net).
 
-At the current state, it's probably only useable if you have some experience with shorewall already.
-
 
 # Configuration
 
@@ -12,6 +10,8 @@ MicroFW uses four tables to read configuration data from. Examples of those can 
 ## Services
 
 A list of services (ssh, http, https etc) and their TCP and UDP ports. You can probably use this one as-is.
+
+It is not possible to use plain port numbers in the rules file. If you're running stuff on custom ports, add them here.
 
 ## Addresses
 
@@ -23,10 +23,45 @@ It is not possible to use plain IP addresses in the rules file. If you want your
 
 A list of interfaces, and which zone they belong to. (Note that unlike shorewall, MicroFW does not require a separate zones definition.)
 
+If you need to accept traffic for protocols other than TCP or UDP (for instance, to enable IPsec, GRE tunnels or OSPF), this is also configured here.
+
 ## Rules
 
 Here's where things get interesting: The rules file defines which traffic to allow or reject. This is basically a mixture of shorewall's
 `rules` and `policy` files.
+
+One rule consists of:
+
+* Source Zone
+* Destination Zone
+* Source Address
+* Destination Address
+* Service
+* Action
+
+Actions can be:
+
+*   `accept+nat`: Allow the traffic and apply masquerading. To the destination, it will appear as if the traffic originated from the firewall.
+    Note that for such rules, the source address field must not be set to `ALL`.
+*   `accept`: Allow the traffic.
+*   `reject`: Block the traffic, and send a notification back to the sender to let them _know_ they were blocked.
+*   `drop`: Block the traffic without letting the sender know. They'll just run into a timeout.
+
+Outbound traffic and ICMP traffic is always allowed.
+
+
+# Installation
+
+You can either set things up manually, or use the Ansible playbook provided in the `ansible` directory.
+
+If you choose to install manually:
+
+* `apt-get install ipset iptables`
+* Copy `etc/microfw.service` to `/etc/systemd/system/`
+* Copy `addresses`, `services`, `interfaces` and `rules` from the `etc` folder to `/etc/microfw` and edit them to your needs
+* `mkdir /var/lib/microfw`
+* `systemctl daemon-reload`, `systemctl enable microfw`
+* `microfw apply`
 
 
 # Usage
@@ -59,17 +94,3 @@ MicroFW routes traffic through two stages of iptables chains:
 NAT rules are applied in the `POSTROUTING` chain. This chain does not allow source interface matching, thus we need to match on source
 IP addresses instead. This is why for `accept+nat` rules, the source IP address field cannot be set to `ALL`, but need to reference
 an address object instead.
-
-
-# Installation
-
-You can either set things up manually, or use the Ansible playbook provided in the `ansible` directory.
-
-If you choose to install manually:
-
-* `apt-get install ipset iptables`
-* Copy `etc/microfw.service` to `/etc/systemd/system/`
-* Copy `addresses`, `services`, `interfaces` and `rules` from the `etc` folder to `/etc/microfw` and edit them to your needs
-* `mkdir /var/lib/microfw`
-* `systemctl daemon-reload`, `systemctl enable microfw`
-* `microfw apply`
