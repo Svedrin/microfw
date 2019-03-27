@@ -50,6 +50,13 @@
       owner: root
       group: root
       mode: 0644
+  - name: Copy custom
+    copy:
+      src:  "../nodes/{{ ansible_facts['hostname'] }}/custom"
+      dest: /etc/microfw/
+      owner: root
+      group: root
+      mode: 0644
   - name: run compile
     command: microfw compile
   - name: Enable the systemd service
