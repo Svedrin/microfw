@@ -52,3 +52,8 @@
       mode: 0644
   - name: run compile
     command: microfw compile
+  - name: Enable the systemd service
+    systemd:
+      name: microfw.service
+      daemon_reload: yes
+      enabled: yes
