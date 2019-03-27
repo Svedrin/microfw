@@ -11,7 +11,7 @@
 #   to define rules for that either)
 #
 # Valid actions:
-# * accept+nat: Traffic is permitted and masqueraded (not yet implemented)
+# * accept+nat: Traffic is permitted and masqueraded
 # * accept:     Traffic is permitted
 # * reject:     Traffic is blocked, sender gets an error message
 # * drop:       Traffic is blocked, sender gets a timeout
@@ -30,6 +30,6 @@ ext             ALL              ALL                  ALL                    ALL
 
 int             FW               ALL                  ALL                    ALL            reject
 int             int              ALL                  ALL                    ALL            accept
-int             ext              lan_home             google                 http           accept
-int             ext              lan_home             google                 https          accept
+int             ext              lan_home             google                 http           accept+nat
+int             ext              lan_home             google                 https          accept+nat
 int             ext              ALL                  ALL                    ALL            reject

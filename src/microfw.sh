@@ -168,6 +168,8 @@ function generate_setup() {
         echo "ip6tables -N ${zone}_inp"
         echo "iptables  -N ${zone}_fwd"
         echo "ip6tables -N ${zone}_fwd"
+        echo "iptables  -t nat -N ${zone}_fwd"
+        echo "ip6tables -t nat -N ${zone}_fwd"
     done
 
 
@@ -197,6 +199,10 @@ function generate_setup() {
         # Route incoming traffic to zone-specific forward chains
         echo "iptables  -A FORWARD -i $iface -j ${zone}_fwd"
         echo "ip6tables -A FORWARD -i $iface -j ${zone}_fwd"
+
+        # Route incoming traffic to zone-specific NAT chains
+        echo "iptables  -t nat -A POSTROUTING -i $iface -j ${zone}_fwd"
+        echo "ip6tables -t nat -A POSTROUTING -i $iface -j ${zone}_fwd"
     done
 
 
@@ -207,6 +213,12 @@ function generate_setup() {
         dstaddr="$4"
         service="$5"
         action="$6"
+        nat="false"
+
+        if [ "$action" = "accept+nat" ]; then
+            nat="true"
+            action="accept"
+        fi
 
         ADDR_FILTER=""
         if [ "$srcaddr" != "ALL" ]; then ADDR_FILTER="${ADDR_FILTER} -m set --match-set ${srcaddr}_v4 src"; fi
@@ -215,11 +227,20 @@ function generate_setup() {
         if [ "$service" != "ALL" ]; then
             SERVICE_FILTER="-p tcp -m set --match-set ${service}_tcp dst"
             echo "iptables  -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
+            if [ "$nat" = "true" ]; then
+                echo "iptables  -t nat -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
+            fi
 
             SERVICE_FILTER="-p udp -m set --match-set ${service}_udp dst"
             echo "iptables  -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
+            if [ "$nat" = "true" ]; then
+                echo "iptables  -t nat -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
+            fi
         else
             echo "iptables  -A ${chain} $filter $ADDR_FILTER -j $action"
+            if [ "$nat" = "true" ]; then
+                echo "iptables  -t nat -A ${chain} $filter $ADDR_FILTER -j MASQUERADE"
+            fi
         fi
 
         ADDR_FILTER=""
@@ -229,17 +250,27 @@ function generate_setup() {
         if [ "$service" != "ALL" ]; then
             SERVICE_FILTER="-p tcp -m set --match-set ${service}_tcp dst"
             echo "ip6tables -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
+            if [ "$nat" = "true" ]; then
+                echo "ip6tables -t nat -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
+            fi
 
             SERVICE_FILTER="-p udp -m set --match-set ${service}_udp dst"
             echo "ip6tables -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j $action"
+            if [ "$nat" = "true" ]; then
+                echo "ip6tables -t nat -A ${chain} $filter $ADDR_FILTER $SERVICE_FILTER -j MASQUERADE"
+            fi
         else
             echo "ip6tables -A ${chain} $filter $ADDR_FILTER -j $action"
+            if [ "$nat" = "true" ]; then
+                echo "ip6tables -t nat -A ${chain} $filter $ADDR_FILTER -j MASQUERADE"
+            fi
         fi
     }
 
     # parse rules. those now only need to be filled into the chains defined earlier
     grep . ${ETC_DIR}/rules | grep -v '^#' | while read srczone dstzone srcaddr dstaddr service action; do
-        if [ "$action" != "accept" ] && [ "$action" != "reject" ] && [ "$action" != "drop" ]; then
+        if [ "$action" != "accept+nat" ] && [ "$action" != "accept" ] && \
+           [ "$action" != "reject" ] && [ "$action" != "drop" ]; then
             echo >&2 "Invalid action '$action' in rule"
             exit 1
         fi
