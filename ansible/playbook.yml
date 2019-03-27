@@ -24,14 +24,14 @@
     file: path=/etc/microfw/ state=directory
   - name: Copy addresses
     copy:
-      src:  ../nodes/addresses
+      src:  "../nodes/{{ ansible_facts['hostname'] }}/addresses"
       dest: /etc/microfw/
       owner: root
       group: root
       mode: 0644
   - name: Copy services
     copy:
-      src:  ../nodes/services
+      src:  "../nodes/{{ ansible_facts['hostname'] }}/services"
       dest: /etc/microfw/
       owner: root
       group: root
