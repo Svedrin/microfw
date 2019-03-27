@@ -56,7 +56,9 @@ fi
 
 
 function generate_tear_down() {
-    echo '#!/bin/bash -eu'
+    echo '#!/bin/bash'
+    echo 'set -e'
+    echo 'set -u'
 
     # set sane defaults: Delete all rules and user-defined chains, then set the
     # policies to ACCEPT. we will add reject rules down the line, setting the
@@ -85,7 +87,9 @@ function generate_tear_down() {
 }
 
 function generate_setup() {
-    echo '#!/bin/bash -eu'
+    echo '#!/bin/bash'
+    echo 'set -e'
+    echo 'set -u'
 
     echo iptables -A INPUT   -p icmp -j ACCEPT
     echo iptables -A FORWARD -p icmp -j ACCEPT
