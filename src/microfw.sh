@@ -91,9 +91,11 @@ function generate_setup() {
     echo 'set -e'
     echo 'set -u'
 
+    echo iptables -A INPUT   -i lo   -j ACCEPT
     echo iptables -A INPUT   -p icmp -j ACCEPT
     echo iptables -A FORWARD -p icmp -j ACCEPT
 
+    echo ip6tables -A INPUT   -i lo     -j ACCEPT
     echo ip6tables -A INPUT   -p icmpv6 -j ACCEPT
     echo ip6tables -A FORWARD -p icmpv6 -j ACCEPT
 
