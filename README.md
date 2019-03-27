@@ -92,5 +92,5 @@ MicroFW routes traffic through two stages of iptables chains:
 
 
 NAT rules are applied in the `POSTROUTING` chain. This chain does not allow source interface matching, thus we need to match on source
-IP addresses instead. This is why for `accept+nat` rules, the source IP address field cannot be set to `ALL`, but need to reference
+IP addresses instead. This is why for `accept+nat` rules, the source IP address field cannot be set to `ALL`, but needs to reference
 an address object instead.
