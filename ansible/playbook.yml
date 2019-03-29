@@ -59,9 +59,9 @@
       owner: root
       group: root
       mode: 0644
-  - name: Copy virtuals
+  - name: Copy virtual
     copy:
-      src:  "../nodes/{{ ansible_facts['hostname'] }}/virtuals"
+      src:  "../nodes/{{ ansible_facts['hostname'] }}/virtual"
       dest: /etc/microfw/
       owner: root
       group: root
