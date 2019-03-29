@@ -13,7 +13,7 @@ http            80               -
 dhcp            67               67
 dhcp-client     68               68
 kerberos        88               88
-ident           113
+ident           113              -
 ntp             123              123
 imap            143              -
 snmp            -                161
