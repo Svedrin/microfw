@@ -45,6 +45,13 @@ def read_table(filename):
         yield types[filename]( *(col_data + [lineno]) )
 
 
+def chain_gen(cmd_gen, next_gen):
+    # Take the results from the last step, and pipe every result
+    # into the next step individually.
+    for cmd in cmd_gen:
+        yield from next_gen(cmd)
+
+
 def printf(fmt, obj):
     """ Format a string using a namedtuple as args. """
     print(fmt % obj._asdict())
@@ -86,9 +93,6 @@ def generate_tear_down():
     print("ipset flush")
     print("ipset destroy")
 
-def iptables(args):
-    print("iptables  %s" % args)
-    print("ip6tables %s" % args)
 
 def generate_setup():
     # Parse tables
@@ -157,6 +161,49 @@ def generate_setup():
                 raise ValueError(
                     "rules:%d: Service '%s' does not exist" % (
                         rule.lineno, rule.service
+                    )
+                )
+
+    for virtual in all_virtuals:
+        if virtual.srczone in ("FW", "ALL"):
+            raise ValueError(
+                "virtuals:%d: Source zone cannot be ALL or FW" % virtual.lineno
+            )
+        if virtual.extaddr == "ALL":
+            raise ValueError("virtuals:%d: External Address cannot be ALL" % rule.lineno)
+        if virtual.extaddr not in all_addresses:
+            raise ValueError(
+                "virtuals:%d: External Address '%s' does not exist" % (
+                    virtual.lineno, virtual.extaddr
+                )
+            )
+        if virtual.intaddr == "ALL":
+            raise ValueError("virtuals:%d: Internal Address cannot be ALL" % rule.lineno)
+        if virtual.intaddr not in all_addresses:
+            raise ValueError(
+                "virtuals:%d: Internal Address '%s' does not exist" % (
+                    virtual.lineno, virtual.intaddr
+                )
+            )
+        if "ALL" in (virtual.extservice, virtual.intservice):
+            if virtual.extservice != virtual.intservice:
+                raise ValueError(
+                    "virtuals:%d: When setting one service to ALL, the other must also be ALL" % (
+                        virtual.lineno
+                    )
+                )
+        if virtual.extservice != "ALL":
+            if virtual.extservice not in all_services:
+                raise ValueError(
+                    "virtuals:%d: External Service '%s' does not exist" % (
+                        virtual.lineno, virtual.extservice
+                    )
+                )
+        if virtual.intservice != "ALL":
+            if virtual.intservice not in all_services:
+                raise ValueError(
+                    "virtuals:%d: Internal Service '%s' does not exist" % (
+                        virtual.lineno, virtual.intservice
                     )
                 )
 
@@ -312,7 +359,7 @@ def generate_setup():
                     if dstzone in (interface.zone, "ALL"):
                         yield dict(cmd,
                             chain="%s_fwd" % rule.srczone,
-                            iface="%s" % interface.name
+                            iface=interface.name
                         )
 
         def address(addr, direction):
@@ -373,16 +420,79 @@ def generate_setup():
             render_cmd
         ]
 
-        def chain_gen(cmd_gen, next_gen):
-            # Take the results from the last step, and pipe every result
-            # into the next step individually.
-            for cmd in cmd_gen:
-                yield from next_gen(cmd)
-
         # Now reduce() the pipeline to generate the actual commands.
         for command in reduce(chain_gen, pipeline):
             print(command)
 
+
+    # Generate rules to implement virtual services
+
+    for virtual in all_virtuals:
+        def iptables(cmd=None):
+            yield dict(cmd="iptables")
+            yield dict(cmd="ip6tables")
+
+        def interfaces(cmd):
+            for interface in all_interfaces:
+                if interface.zone == virtual.srczone:
+                    yield dict(cmd, iface=interface.name)
+
+        def address(addr, which_one):
+            def _filter_addr(cmd):
+                if cmd["cmd"] == "iptables":
+                    if all_addresses[addr].v4 != '-':
+                        yield dict(cmd, **{ "%saddr" % which_one : all_addresses[addr].v4 })
+                else:
+                    if all_addresses[addr].v6 != '-':
+                        yield dict(cmd, **{ "%saddr" % which_one : all_addresses[addr].v6 })
+            return _filter_addr
+
+        def service(service, which_one):
+            def _filter_service(cmd):
+                if service == "ALL":
+                    yield cmd
+                else:
+                    if all_services[service].tcp != '-':
+                        yield dict(cmd, proto="tcp", **{
+                            "%sservice" % which_one : all_services[service].tcp,
+                        })
+                    if all_services[service].udp != '-':
+                        yield dict(cmd, proto="udp", **{
+                            "%sservice" % which_one : all_services[service].udp,
+                        })
+            return _filter_service
+
+        def render_cmd(cmd):
+            fmt_dnat = "%(cmd)s -t 'nat'    -A 'PREROUTING' -i '%(iface)s' -d '%(extaddr)s' "
+            fmt_fltr = "%(cmd)s -t 'filter' -A 'FORWARD'    -i '%(iface)s' -d '%(intaddr)s' "
+
+            if cmd.get("extservice"):
+                fmt_dnat += "-p '%(proto)s' -m '%(proto)s' --dport '%(extservice)s' "
+                fmt_fltr += "-p '%(proto)s' -m '%(proto)s' --dport '%(intservice)s' "
+
+            if virtual.intservice == virtual.extservice:
+                fmt_dnat += "-j DNAT --to-destination '%(intaddr)s'"
+                fmt_fltr += "-j ACCEPT"
+            else:
+                fmt_dnat += "-j DNAT --to-destination '%(intaddr)s:%(intservice)s'"
+                fmt_fltr += "-j ACCEPT"
+
+            yield fmt_dnat % cmd
+            yield fmt_fltr % cmd
+
+        pipeline = [
+            iptables(),
+            interfaces,
+            address(virtual.extaddr,    "ext"),
+            address(virtual.intaddr,    "int"),
+            service(virtual.extservice, "ext"),
+            service(virtual.intservice, "int"),
+            render_cmd
+        ]
+
+        # Now reduce() the pipeline to generate the actual commands.
+        for command in reduce(chain_gen, pipeline):
+            print(command)
 
 if __name__ == '__main__':
     generate_setup()
