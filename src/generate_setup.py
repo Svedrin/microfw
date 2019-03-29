@@ -217,10 +217,10 @@ def generate_setup():
 
     for service in sorted(used_services, key=lambda x: x.name):
         if service.tcp != '-':
-            printf("ipset create '%(name)s_tcp' hash:net bitmap:port range 1-65535", service)
+            printf("ipset create '%(name)s_tcp' bitmap:port range 1-65535", service)
             printf("ipset add    '%(name)s_tcp' '%(tcp)s'", service)
         if service.udp != '-':
-            printf("ipset create '%(name)s_udp' hash:net bitmap:port range 1-65535", service)
+            printf("ipset create '%(name)s_udp' bitmap:port range 1-65535", service)
             printf("ipset add    '%(name)s_udp' '%(udp)s'", service)
 
     print("")
