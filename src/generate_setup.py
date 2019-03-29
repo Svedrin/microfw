@@ -466,6 +466,14 @@ def generate_setup():
         for command in reduce(chain_gen, pipeline):
             print(command)
 
+    # Generate last-resort reject rules
+
+    print("iptables  -A INPUT   -j reject")
+    print("ip6tables -A INPUT   -j reject")
+    print("iptables  -A FORWARD -j reject")
+    print("ip6tables -A FORWARD -j reject")
+
+
 
 if __name__ == '__main__':
     generate_setup()
