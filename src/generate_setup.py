@@ -310,7 +310,7 @@ def generate_setup():
         # At the end, every combination gets passed into render_cmd which
         # turns it into a string.
 
-        def iptables(cmd=None):
+        def iptables():
             yield dict(cmd="iptables")
             yield dict(cmd="ip6tables")
 
@@ -403,7 +403,12 @@ def generate_setup():
     # Generate rules to implement virtual services
 
     for virtual in all_virtuals:
-        def iptables(cmd=None):
+        # We basically do the same thing we did for rules, but for each entry in virtuals,
+        # we need to create _two_ rules:
+        # One for PREROUTING to perform the DNAT on the external IPs, and
+        # one for FORWARD to allow the traffic that results from this.
+
+        def iptables():
             yield dict(cmd="iptables")
             yield dict(cmd="ip6tables")
 
