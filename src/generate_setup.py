@@ -207,7 +207,7 @@ def generate_setup():
 
     # Generate ipsets for the entries we're going to use
 
-    for address in used_addresses:
+    for address in sorted(used_addresses, key=lambda x: x.name):
         if address.v4 != '-':
             printf("ipset create '%(name)s_v4' hash:net family inet  hashsize 1024 maxelem 65536", address)
             printf("ipset add    '%(name)s_v4' '%(v4)s'", address)
@@ -215,7 +215,7 @@ def generate_setup():
             printf("ipset create '%(name)s_v6' hash:net family inet6 hashsize 1024 maxelem 65536", address)
             printf("ipset add    '%(name)s_v6' '%(v6)s'", address)
 
-    for service in used_services:
+    for service in sorted(used_services, key=lambda x: x.name):
         if service.tcp != '-':
             printf("ipset create '%(name)s_tcp' hash:net bitmap:port range 1-65535", service)
             printf("ipset add    '%(name)s_tcp' '%(tcp)s'", service)
@@ -271,7 +271,7 @@ def generate_setup():
 
     # Generate zone-specific chains
 
-    for zone in all_zones:
+    for zone in sorted(all_zones):
         print("iptables  -N '%s_inp'" % zone)
         print("ip6tables -N '%s_inp'" % zone)
         print("iptables  -N '%s_fwd'" % zone)
