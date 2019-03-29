@@ -4,7 +4,7 @@ import sys
 import os.path
 
 from functools   import reduce
-from collections import namedtuple, Counter
+from collections import namedtuple
 
 Address   = namedtuple("Address",   ["name", "v4", "v6", "lineno"])
 Service   = namedtuple("Service",   ["name", "tcp", "udp", "lineno"])
