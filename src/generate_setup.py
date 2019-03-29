@@ -361,16 +361,10 @@ def generate_setup():
 
         def action(cmd):
             if rule.action == "accept+nat":
-                action = "accept"
-            else:
-                action = rule.action
-
-            yield dict(cmd, action=action)
-
-        def masq(cmd):
-            yield cmd
-            if rule.action == "accept+nat":
+                yield dict(cmd, action="accept")
                 yield dict(cmd, table="nat", chain="POSTROUTING", action="MASQUERADE")
+            else:
+                yield dict(cmd, action=rule.action)
 
         def render_cmd(cmd):
             fmt = "%(cmd)-9s "
@@ -398,7 +392,6 @@ def generate_setup():
             address(rule.dstaddr, "dst"),
             service,
             action,
-            masq,
             render_cmd
         ]
 
