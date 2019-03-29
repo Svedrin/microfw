@@ -19,6 +19,7 @@ while [ -n "${1:-}" ]; do
             echo " -n --node     Read config from nodes/<node> subdir instead of /etc/microfw"
             echo
             echo "Commands:"
+            echo " show          Generate and show setup.sh, but do not write it to disk"
             echo " compile       Update tear_down.sh and setup.sh"
             echo " apply         compile, run setup, prompt for aliveness, run teardown on timeout"
             exit 0
@@ -32,6 +33,10 @@ while [ -n "${1:-}" ]; do
                 exit 2
             fi
             shift
+            ;;
+
+        show)
+            COMMAND="show"
             ;;
 
         compile)
@@ -119,6 +124,9 @@ function apply() {
 
 
 case "$COMMAND" in
+    show)
+        generate_setup
+        ;;
     compile)
         compile
         ;;
