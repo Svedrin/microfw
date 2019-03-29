@@ -24,7 +24,7 @@ def read_table(filename):
         "services":   3,
         "interfaces": 3,
         "rules":      6,
-        "virtual":    5
+        "virtuals":   5
     }
 
     types = {
@@ -32,7 +32,7 @@ def read_table(filename):
         "services":   Service,
         "interfaces": Interface,
         "rules":      Rule,
-        "virtual":    Virtual
+        "virtuals":   Virtual
     }
 
     if filename not in columns:
@@ -80,7 +80,7 @@ def generate_setup():
     all_interfaces = list(read_table("interfaces"))
     all_zones      = set( iface.zone for iface in all_interfaces )
     all_rules      = list(read_table("rules"))
-    all_virtuals   = list(read_table("virtual"))
+    all_virtuals   = list(read_table("virtuals"))
 
     # Validate interfaces, rules and virtuals
 
