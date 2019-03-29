@@ -10,7 +10,7 @@
 # Interface        Zone        Protocols
 
 eth0               ext         gre
-eth1               int
+eth1               int         -
 tun0               int         ospf
 gre0               int         ospf
-docker0            int
+docker0            int         -
