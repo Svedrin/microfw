@@ -330,16 +330,16 @@ def generate_setup():
                         iface=interface.name
                     )
 
-        def address(addr, direction):
+        def address(addr, which_one):
             def _filter_addr(cmd):
                 if addr == "ALL":
                     yield cmd
                 elif cmd["cmd"] == "iptables":
                     if all_addresses[addr].v4 != '-':
-                        yield dict(cmd, **{ "%saddr" % direction : "%s_v4" % addr })
+                        yield dict(cmd, **{ "%saddr" % which_one : "%s_v4" % addr })
                 else:
                     if all_addresses[addr].v6 != '-':
-                        yield dict(cmd, **{ "%saddr" % direction : "%s_v6" % addr })
+                        yield dict(cmd, **{ "%saddr" % which_one : "%s_v6" % addr })
 
             return _filter_addr
 
