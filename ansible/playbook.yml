@@ -20,6 +20,15 @@
       owner: root
       group: root
       mode: 0755
+  - name: mkdir /usr/local/lib/microfw
+    file: path=/usr/local/lib/microfw/ state=directory
+  - name: Copy generate_setup.py
+    copy:
+      src:  ../src/generate_setup.py
+      dest: /usr/local/lib/microfw/generate_setup.py
+      owner: root
+      group: root
+      mode: 0755
   - name: mkdir /etc/microfw
     file: path=/etc/microfw/ state=directory
   - name: Copy addresses
