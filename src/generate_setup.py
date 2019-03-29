@@ -277,9 +277,10 @@ def generate_setup():
     # Generate rules to route traffic from INPUT and FORWARD to those chains
 
     for interface in all_interfaces:
-        for proto in interface.protocols.split(","):
-            print("iptables  -A INPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
-            print("ip6tables -A INPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
+        if interface.protocols != "-":
+            for proto in interface.protocols.split(","):
+                print("iptables  -A INPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
+                print("ip6tables -A INPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
 
         # Route incoming traffic to zone-specific input chains
         printf("iptables  -A INPUT   -i '%(name)s' -j '%(zone)s_inp'", interface)
