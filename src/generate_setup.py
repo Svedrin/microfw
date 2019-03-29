@@ -209,58 +209,62 @@ def generate_setup():
 
     for address in used_addresses:
         if address.v4 != '-':
-            printf("ipset create %(name)s_v4 hash:net family inet  hashsize 1024 maxelem 65536", address)
-            printf("ipset add    %(name)s_v4 %(v4)s", address)
+            printf("ipset create '%(name)s_v4' hash:net family inet  hashsize 1024 maxelem 65536", address)
+            printf("ipset add    '%(name)s_v4' '%(v4)s'", address)
         if address.v6 != '-':
-            printf("ipset create %(name)s_v6 hash:net family inet6 hashsize 1024 maxelem 65536", address)
-            printf("ipset add    %(name)s_v6 %(v6)s", address)
+            printf("ipset create '%(name)s_v6' hash:net family inet6 hashsize 1024 maxelem 65536", address)
+            printf("ipset add    '%(name)s_v6' '%(v6)s'", address)
 
     for service in used_services:
         if service.tcp != '-':
-            printf("ipset create %(name)s_tcp hash:net bitmap:port range 1-65535", service)
-            printf("ipset add    %(name)s_tcp %(tcp)s", service)
+            printf("ipset create '%(name)s_tcp' hash:net bitmap:port range 1-65535", service)
+            printf("ipset add    '%(name)s_tcp' '%(tcp)s'", service)
         if service.udp != '-':
-            printf("ipset create %(name)s_udp hash:net bitmap:port range 1-65535", service)
-            printf("ipset add    %(name)s_udp %(udp)s", service)
+            printf("ipset create '%(name)s_udp' hash:net bitmap:port range 1-65535", service)
+            printf("ipset add    '%(name)s_udp' '%(udp)s'", service)
+
+    print("")
 
     # Generate implicit accept rules for lo, icmp and related
 
-    print("iptables -A INPUT   -i lo   -j ACCEPT")
-    print("iptables -A INPUT   -p icmp -j ACCEPT")
-    print("iptables -A FORWARD -p icmp -j ACCEPT")
-    print("")
-    print("ip6tables -A INPUT   -i lo     -j ACCEPT")
+    print("iptables  -A INPUT   -i lo   -j ACCEPT")
+    print("ip6tables -A INPUT   -i lo   -j ACCEPT")
+
+    print("iptables  -A INPUT   -p icmp -j ACCEPT")
+    print("iptables  -A FORWARD -p icmp -j ACCEPT")
+
     print("ip6tables -A INPUT   -p icmpv6 -j ACCEPT")
     print("ip6tables -A FORWARD -p icmpv6 -j ACCEPT")
-    print("")
+
     print("iptables  -A INPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
     print("ip6tables -A INPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
+
     print("iptables  -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
     print("ip6tables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
 
     # Generate action chains
 
-    print("iptables -N accept")
-    print("iptables -A accept -j ACCEPT")
-    print("")
-    print("iptables -N drop")
-    print("iptables -A drop -j DROP")
-    print("")
-    print("iptables -N reject")
-    print("iptables -A reject -m addrtype --src-type BROADCAST -j DROP")
-    print("iptables -A reject -s 224.0.0.0/4 -j DROP")
-    print("iptables -A reject -p igmp -j DROP")
-    print("iptables -A reject -p tcp -j REJECT --reject-with tcp-reset")
-    print("iptables -A reject -p udp -j REJECT --reject-with icmp-port-unreachable")
-    print("iptables -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable")
-    print("iptables -A reject -j REJECT --reject-with icmp-host-prohibited")
-    print("")
+    print("iptables  -N accept")
+    print("iptables  -A accept -j ACCEPT")
+
+    print("iptables  -N drop")
+    print("iptables  -A drop -j DROP")
+
+    print("iptables  -N reject")
+    print("iptables  -A reject -m addrtype --src-type BROADCAST -j DROP")
+    print("iptables  -A reject -s 224.0.0.0/4 -j DROP")
+    print("iptables  -A reject -p igmp -j DROP")
+    print("iptables  -A reject -p tcp -j REJECT --reject-with tcp-reset")
+    print("iptables  -A reject -p udp -j REJECT --reject-with icmp-port-unreachable")
+    print("iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable")
+    print("iptables  -A reject -j REJECT --reject-with icmp-host-prohibited")
+
     print("ip6tables -N accept")
     print("ip6tables -A accept -j ACCEPT")
-    print("")
+
     print("ip6tables -N drop")
     print("ip6tables -A drop -j DROP")
-    print("")
+
     print("ip6tables -N reject")
     print("ip6tables -A reject -p tcp -j REJECT --reject-with tcp-reset")
     print("ip6tables -A reject -j REJECT --reject-with icmp6-adm-prohibited")
@@ -272,7 +276,6 @@ def generate_setup():
         print("ip6tables -N '%s_inp'" % zone)
         print("iptables  -N '%s_fwd'" % zone)
         print("ip6tables -N '%s_fwd'" % zone)
-        print("")
 
     # Generate rules to route traffic from INPUT and FORWARD to those chains
 
@@ -308,8 +311,8 @@ def generate_setup():
         # turns it into a string.
 
         def iptables(cmd=None):
-            yield dict(cmd="iptables",  table="filter")
-            yield dict(cmd="ip6tables", table="filter")
+            yield dict(cmd="iptables")
+            yield dict(cmd="ip6tables")
 
         def chains(cmd):
             # Find out which input/forward chains we need to use
@@ -366,7 +369,10 @@ def generate_setup():
                 yield dict(cmd, table="nat", chain="POSTROUTING", action="MASQUERADE")
 
         def render_cmd(cmd):
-            fmt = "%(cmd)s -t '%(table)s' -A '%(chain)s' "
+            fmt = "%(cmd)-9s "
+            if cmd.get("table"):
+                fmt += "-t '%(table)s' "
+            fmt += "-A '%(chain)s' "
             if cmd.get("iface"):
                 fmt += "-o '%(iface)s' "
             if cmd.get("srcaddr"):
