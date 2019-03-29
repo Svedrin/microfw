@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import sys
+import os.path
+
 from functools   import reduce
 from collections import namedtuple, Counter
 
@@ -8,6 +11,11 @@ Service   = namedtuple("Service",   ["name", "tcp", "udp", "lineno"])
 Interface = namedtuple("Interface", ["name", "zone", "protocols", "lineno"])
 Rule      = namedtuple("Rule",      ["srczone", "dstzone", "srcaddr", "dstaddr", "service", "action", "lineno"])
 Virtual   = namedtuple("Virtual",   ["srczone", "extaddr", "intaddr", "extservice", "intservice", "lineno"])
+
+ETC_DIR = "/etc/microfw"
+
+if len(sys.argv) > 1:
+    ETC_DIR = sys.argv[1]
 
 
 def read_table(filename):
@@ -30,7 +38,7 @@ def read_table(filename):
     if filename not in columns:
         raise RuntimeError("table %s does not exist" % filename)
 
-    table = open("etc/" + filename, "r")
+    table = open(os.path.join(ETC_DIR, filename), "r")
     for lineno, line in enumerate(table, start=1):
         if not line.strip() or line.startswith("#"):
             continue
@@ -55,43 +63,6 @@ def chain_gen(cmd_gen, next_gen):
 def printf(fmt, obj):
     """ Format a string using a namedtuple as args. """
     print(fmt % obj._asdict())
-
-def generate_tear_down():
-    print('#!/bin/bash')
-    print('set -e')
-    print('set -u')
-    print("")
-
-    # set sane defaults: Delete all rules and user-defined chains, then set the
-    # policies to ACCEPT. we will add reject rules down the line, setting the
-    # policy to ACCEPT means that the admin can get things to work using
-    # iptables -F manually.
-    # Then, delete all ipsets.
-
-    print("iptables -F")
-    print("iptables -X")
-    print("")
-    print("iptables -t nat -F")
-    print("iptables -t nat -X")
-    print("")
-    print("iptables -P INPUT   ACCEPT")
-    print("iptables -P FORWARD ACCEPT")
-    print("iptables -P OUTPUT  ACCEPT")
-    print("")
-    print("")
-    print("ip6tables -F")
-    print("ip6tables -X")
-    print("")
-    print("ip6tables -t nat -F")
-    print("ip6tables -t nat -X")
-    print("")
-    print("ip6tables -P INPUT   ACCEPT")
-    print("ip6tables -P FORWARD ACCEPT")
-    print("ip6tables -P OUTPUT  ACCEPT")
-    print("")
-    print("")
-    print("ipset flush")
-    print("ipset destroy")
 
 
 def generate_setup():
@@ -493,6 +464,7 @@ def generate_setup():
         # Now reduce() the pipeline to generate the actual commands.
         for command in reduce(chain_gen, pipeline):
             print(command)
+
 
 if __name__ == '__main__':
     generate_setup()
