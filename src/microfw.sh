@@ -35,16 +35,8 @@ while [ -n "${1:-}" ]; do
             shift
             ;;
 
-        show)
-            COMMAND="show"
-            ;;
-
-        compile)
-            COMMAND="compile"
-            ;;
-
-        apply)
-            COMMAND="apply"
+        show|compile|apply)
+            COMMAND="$1"
             ;;
 
         *)
@@ -98,7 +90,11 @@ function generate_tear_down() {
 }
 
 function generate_setup() {
-    /usr/local/lib/microfw/generate_setup.py "$ETC_DIR"
+    if [ -e "/usr/local/lib/microfw/generate_setup.py" ]; then
+        /usr/local/lib/microfw/generate_setup.py "$ETC_DIR"
+    else
+        src/generate_setup.py "$ETC_DIR"
+    fi
 }
 
 function compile() {
