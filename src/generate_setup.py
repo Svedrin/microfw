@@ -360,7 +360,11 @@ def generate_setup():
                     yield dict(cmd, service='%s_udp' % rule.service, proto="udp")
 
         def action(cmd):
-            action = "accept" if rule.action == "accept+nat" else rule.action
+            if rule.action == "accept+nat":
+                action = "accept"
+            else:
+                action = rule.action
+
             yield dict(cmd, action=action)
 
         def masq(cmd):
