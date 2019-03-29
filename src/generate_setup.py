@@ -445,6 +445,9 @@ def generate_setup():
                 fmt_dnat += "-p '%(proto)s' -m '%(proto)s' --dport '%(extservice)s' "
                 fmt_fltr += "-p '%(proto)s' -m '%(proto)s' --dport '%(intservice)s' "
 
+                cmd["extservice"] = cmd["extservice"].replace("-", ":")
+                cmd["intservice"] = cmd["intservice"].replace("-", ":")
+
             if virtual.intservice == virtual.extservice:
                 fmt_dnat += "-j DNAT --to-destination '%(intaddr)s'"
                 fmt_fltr += "-j ACCEPT"
