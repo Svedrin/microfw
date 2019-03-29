@@ -141,7 +141,7 @@ def generate_setup():
                 "virtuals:%d: Source zone cannot be ALL or FW" % virtual.lineno
             )
         if virtual.extaddr == "ALL":
-            raise ValueError("virtuals:%d: External Address cannot be ALL" % rule.lineno)
+            raise ValueError("virtuals:%d: External Address cannot be ALL" % virtual.lineno)
         if virtual.extaddr not in all_addresses:
             raise ValueError(
                 "virtuals:%d: External Address '%s' does not exist" % (
@@ -149,7 +149,7 @@ def generate_setup():
                 )
             )
         if virtual.intaddr == "ALL":
-            raise ValueError("virtuals:%d: Internal Address cannot be ALL" % rule.lineno)
+            raise ValueError("virtuals:%d: Internal Address cannot be ALL" % virtual.lineno)
         if virtual.intaddr not in all_addresses:
             raise ValueError(
                 "virtuals:%d: Internal Address '%s' does not exist" % (
