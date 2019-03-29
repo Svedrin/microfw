@@ -49,9 +49,9 @@ Actions can be:
 
 Outbound traffic and ICMP traffic is always allowed.
 
-## Custom
+## Virtuals
 
-A list of custom rules to include in the configuration. Mostly useful for services to be exposed via DNAT.
+A list of virtual services to expose via DNAT.
 
 
 # Installation
