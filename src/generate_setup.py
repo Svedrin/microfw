@@ -316,26 +316,19 @@ def generate_setup():
 
         def chains(cmd):
             # Find out which input/forward chains we need to use
-            if rule.dstzone == "ALL":
-                dstzones = all_zones | {"FW"}
-            else:
-                dstzones = [rule.dstzone]
+            # Destination ALL or FW: goto <src>_inp
+            if rule.dstzone in ("FW", "ALL"):
+                yield dict(cmd,
+                    chain="%s_inp" % rule.srczone
+                )
 
-            for dstzone in dstzones:
-                # Destination ALL or FW: goto <src>_inp
-                if dstzone in ("FW", "ALL"):
+            # Destination ALL or specific zone: goto <src>_fwd
+            for interface in all_interfaces:
+                if rule.dstzone in (interface.zone, "ALL"):
                     yield dict(cmd,
-                        chain="%s_inp" % rule.srczone,
-                        iface=""
+                        chain="%s_fwd" % rule.srczone,
+                        iface=interface.name
                     )
-
-                # Destination ALL or specific zone: goto <src>_fwd
-                for interface in all_interfaces:
-                    if dstzone in (interface.zone, "ALL"):
-                        yield dict(cmd,
-                            chain="%s_fwd" % rule.srczone,
-                            iface=interface.name
-                        )
 
         def address(addr, direction):
             def _filter_addr(cmd):
