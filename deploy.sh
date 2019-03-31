@@ -9,4 +9,4 @@ if [ -n "${1:-}" ]; then
     WHERE="-l $1"
 fi
 
-ansible-playbook -i ansible/hosts $WHERE ansible/playbook.yml
+ansible-playbook -i nodes/inventory $WHERE ansible/playbook.yml
