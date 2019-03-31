@@ -134,6 +134,10 @@ def generate_setup():
                         rule.lineno, rule.service
                     )
                 )
+        if rule.action == "accept+nat" and rule.srcaddr == "ALL":
+            raise ValueError(
+                "rules:%d: Source address cannot be ALL for accept+nat rules" % rule.lineno
+            )
 
     for virtual in all_virtuals:
         if virtual.srczone in ("FW", "ALL"):
