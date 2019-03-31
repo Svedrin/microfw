@@ -234,12 +234,6 @@ def generate_setup():
     print("iptables  -A INPUT   -i lo   -j ACCEPT")
     print("ip6tables -A INPUT   -i lo   -j ACCEPT")
 
-    print("iptables  -A INPUT   -p icmp -j ACCEPT")
-    print("iptables  -A FORWARD -p icmp -j ACCEPT")
-
-    print("ip6tables -A INPUT   -p icmpv6 -j ACCEPT")
-    print("ip6tables -A FORWARD -p icmpv6 -j ACCEPT")
-
     print("iptables  -A INPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
     print("ip6tables -A INPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
 
@@ -473,6 +467,14 @@ def generate_setup():
         # Now reduce() the pipeline to generate the actual commands.
         for command in reduce(chain_gen, pipeline):
             print(command)
+
+    # Accept icmp by default, unless a previous rule explicitly rejected/dropped it
+
+    print("iptables  -A INPUT   -p icmp -j ACCEPT")
+    print("iptables  -A FORWARD -p icmp -j ACCEPT")
+
+    print("ip6tables -A INPUT   -p icmpv6 -j ACCEPT")
+    print("ip6tables -A FORWARD -p icmpv6 -j ACCEPT")
 
     # Generate last-resort reject rules
 
