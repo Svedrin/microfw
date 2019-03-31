@@ -64,7 +64,7 @@ If you choose to install manually:
 
 * `apt-get install ipset iptables`
 * Copy `etc/microfw.service` to `/etc/systemd/system/`
-* Copy `addresses`, `services`, `interfaces` and `rules` from the `etc` folder to `/etc/microfw` and edit them to your needs
+* Copy `addresses`, `services`, `interfaces`, `rules` and `virtuals` from the `etc` folder to `/etc/microfw` and edit them to your needs
 * `mkdir /var/lib/microfw`
 * `systemctl daemon-reload`, `systemctl enable microfw`
 * `microfw compile`, `systemctl start microfw`
@@ -78,6 +78,20 @@ MicroFW is used by editing the respective files under `/etc/microfw`, then runni
 The `apply` command will compile the rules and import them into iptables. Then it prompts for you to confirm that your SSH session is still
 alive. If you don't respond to the prompt within 30 seconds, the firewall is stopped and iptables is torn down. This will enable you to
 revive your SSH session, but it also leaves your box completely unprotected. So if that happens, be sure to not leave it like this :P
+
+
+# Managing multiple MicroFWs from a central location
+
+If you want to make use of the ansible playbook and `deploy.sh`, you'll notice that both refer to a `nodes/` subdirectory which does not exist.
+To properly support managing multiple nodes from a central location, you need to:
+
+* `mkdir nodes`
+* create a file named `nodes/inventory` that contains a list of all nodes you wish to manage
+* for each node, `mkdir nodes/<node>` and put the config files in there
+* then run `./deploy.sh [<node>]` to deploy.
+
+Note that the playbook does not actually _apply_ the rules. It just installs everything and runs `microfw compile`, then chickens out. If
+you want to actually apply the rules, it's probably easiest if you add a step to restart the `microfw` service through systemd.
 
 
 # Architecture
