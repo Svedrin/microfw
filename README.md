@@ -47,7 +47,9 @@ Actions can be:
 *   `reject`: Block the traffic, and send a notification back to the sender to let them _know_ they were blocked.
 *   `drop`: Block the traffic without letting the sender know. They'll just run into a timeout.
 
-Outbound traffic and ICMP traffic is always allowed.
+Outbound traffic is always allowed.
+
+ICMP traffic is allowed by default. However, if you define an explicit rule to reject or drop traffic for `ALL` services, that includes ICMP.
 
 ## Virtuals
 
