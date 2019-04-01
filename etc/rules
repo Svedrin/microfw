@@ -4,11 +4,16 @@
 # As usual, first match decides what happens.
 #
 # Implicit rules:
-# * ICMP(6) is always allowed
-# * traffic related to already-established sessions is always allowed
-# * for inbound traffic, implicit reject (everything not accepted here is rejected)
-# * for outbound traffic originating from the Firewall itself, implicit accept (and really no way
-#   to define rules for that either)
+# * outbound traffic is always allowed
+# * traffic related to already-established sessions is always allowed(*)
+# * for inbound traffic, everything not explicitly allowed here is rejected
+# * ICMP(6) is always allowed, _unless_ it matches an explicit reject or drop rule.
+#
+# (*) be advised this can cause funny situations where you accidentally block SSH, but your
+#     current session keeps working because it's already established, so you don't _notice_
+#     right away that you blocked SSH. Once you close that session and try to establish a
+#     _new_ one though, you'll experience a surprise. So if you're building a new firewall,
+#     be sure to test that you can open new SSH sessions BEFORE you close the old ones.
 #
 # Valid actions:
 # * accept+nat: Traffic is permitted and masqueraded
