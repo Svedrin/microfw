@@ -1,2 +1,6 @@
 nodes/
 ansible/hosts
+
+rs/.idea/
+rs/rs.iml
+rs/target/
