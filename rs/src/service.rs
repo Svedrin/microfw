@@ -1,4 +1,5 @@
-use std::io::Result;
+use crate::parse_result::ParseResult;
+use std::num::ParseIntError;
 
 #[derive(Debug)]
 pub struct Service {
@@ -8,33 +9,25 @@ pub struct Service {
     lineno:    usize
 }
 
-fn parse_port(portno: &str, lineno: usize) -> Option<u16> {
+fn parse_port(portno: &str) -> Result<Option<u16>, ParseIntError> {
     if portno != "-" {
-        Some(
-            portno
-                .parse()
-                .expect(&format!("services:{}:could not parse port number {}", lineno, portno))
-        )
+        Ok(Some(portno.parse()?))
     } else {
-        None
+        Ok(None)
     }
 }
 
 impl Service {
-    fn from_words(words: Vec<&str>, lineno: usize) -> Service {
-        if words.len() != 3 {
-            panic!("interfaces:{}: expected 3 arguments, got {}", lineno, words.len());
-        }
-
-        Service {
+    fn from_words(words: Vec<&str>, lineno: usize) -> ParseResult<Service> {
+        ParseResult::Ok(Service {
             name:      words[0].to_string(),
-            tcp:       parse_port(words[1], lineno),
-            udp:       parse_port(words[2], lineno),
+            tcp:       parse_port(words[1])?,
+            udp:       parse_port(words[2])?,
             lineno:    lineno
-        }
+        })
     }
 }
 
-pub fn read_services() -> Result<Vec<Service>> {
-    crate::table::read_table("services", Service::from_words)
+pub fn read_services() -> ParseResult<Vec<Service>> {
+    crate::table::read_table("services", 3, Service::from_words)
 }

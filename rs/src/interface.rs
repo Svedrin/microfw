@@ -1,4 +1,4 @@
-use std::io::Result;
+use crate::parse_result::ParseResult;
 
 #[derive(Debug)]
 pub struct Interface {
@@ -9,22 +9,19 @@ pub struct Interface {
 }
 
 impl Interface {
-    fn from_words(words: Vec<&str>, lineno: usize) -> Interface {
-        if words.len() != 3 {
-            panic!("interfaces:{}: expected 3 arguments, got {}", lineno, words.len());
-        }
+    fn from_words(words: Vec<&str>, lineno: usize) -> ParseResult<Interface> {
         if words[1] == "ALL" || words[1] == "FW" {
             panic!("interfaces:{}: zone cannot be ALL or FW", lineno);
         }
-        Interface {
+        ParseResult::Ok(Interface {
             name:      words[0].to_string(),
             zone:      words[1].to_string(),
             protocols: words[2].to_string().split(",").map(|x| x.to_string()).collect(),
             lineno:    lineno
-        }
+        })
     }
 }
 
-pub fn read_interfaces() -> Result<Vec<Interface>> {
-    crate::table::read_table("interfaces", Interface::from_words)
+pub fn read_interfaces() -> ParseResult<Vec<Interface>> {
+    crate::table::read_table("interfaces", 3,Interface::from_words)
 }

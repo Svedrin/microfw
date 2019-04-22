@@ -1,4 +1,6 @@
+#![feature(try_trait)]
 
+mod parse_result;
 mod table;
 mod address;
 mod interface;

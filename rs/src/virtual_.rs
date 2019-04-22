@@ -1,4 +1,4 @@
-use std::io::Result;
+use crate::parse_result::ParseResult;
 
 #[derive(Debug)]
 pub enum VirtualZone {
@@ -56,21 +56,18 @@ pub struct Virtual {
 }
 
 impl Virtual {
-    fn from_words(words: Vec<&str>, lineno: usize) -> Virtual {
-        if words.len() != 5 {
-            panic!("virtuals:{}: expected 5 arguments, got {}", lineno, words.len());
-        }
-        Virtual {
+    fn from_words(words: Vec<&str>, lineno: usize) -> ParseResult<Virtual> {
+        ParseResult::Ok(Virtual {
             srczone: VirtualZone::from(words[0]),
             extaddr: VirtualAddress::from(words[1]),
             intaddr: VirtualAddress::from(words[2]),
             extservice: VirtualService::from(words[3]),
             intservice: VirtualService::from(words[4]),
             lineno:  lineno
-        }
+        })
     }
 }
 
-pub fn read_virtuals() -> Result<Vec<Virtual>> {
-    crate::table::read_table("virtuals", Virtual::from_words)
+pub fn read_virtuals() -> ParseResult<Vec<Virtual>> {
+    crate::table::read_table("virtuals", 5, Virtual::from_words)
 }

@@ -1,4 +1,4 @@
-use std::io::Result;
+use crate::parse_result::ParseResult;
 
 #[derive(Debug)]
 pub enum RuleZone {
@@ -79,11 +79,8 @@ pub struct Rule {
 }
 
 impl Rule {
-    fn from_words(words: Vec<&str>, lineno: usize) -> Rule {
-        if words.len() != 6 {
-            panic!("rules:{}: expected 6 arguments, got {}", lineno, words.len());
-        }
-        Rule {
+    fn from_words(words: Vec<&str>, lineno: usize) -> ParseResult<Rule> {
+        ParseResult::Ok(Rule {
             srczone: RuleZone::from(words[0]),
             dstzone: RuleZone::from(words[1]),
             srcaddr: RuleAddress::from(words[2]),
@@ -91,10 +88,10 @@ impl Rule {
             service: RuleService::from(words[4]),
             action:  RuleAction::from(words[5]),
             lineno:  lineno
-        }
+        })
     }
 }
 
-pub fn read_rules() -> Result<Vec<Rule>> {
-    crate::table::read_table("rules", Rule::from_words)
+pub fn read_rules() -> ParseResult<Vec<Rule>> {
+    crate::table::read_table("rules", 6, Rule::from_words)
 }
