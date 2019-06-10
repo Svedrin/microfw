@@ -53,6 +53,16 @@ def read_table(filename):
         yield types[filename]( *(col_data + [lineno]) )
 
 
+def ensure_unique(thing, lst):
+    # Make sure `lst` contains only unique elements, and raise ValueError
+    # if dupes are found.
+    def compare(a, b):
+        if a == b:
+            raise ValueError("duplicate %s: %s" % (thing, b))
+        return b
+    reduce(compare, sorted(lst))
+
+
 def chain_gen(cmd_gen, next_gen):
     # Take the results from the last step, and pipe every result
     # into the next step individually.
@@ -83,6 +93,8 @@ def generate_setup():
     all_virtuals   = list(read_table("virtuals"))
 
     # Validate interfaces, rules and virtuals
+
+    ensure_unique("interface", [interface.name for interface in all_interfaces])
 
     for interface in all_interfaces:
         if interface.zone in ("FW", "ALL"):
