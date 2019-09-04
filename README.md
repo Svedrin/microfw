@@ -5,7 +5,7 @@ iptables firewall inspired by [shorewall](http://www.shorewall.net).
 
 # Configuration
 
-MicroFW uses five tables to read configuration data from. Examples of those can be found in the `etc` subdirectory.
+MicroFW uses ascii tables to read configuration data from. Examples of those can be found in the `etc` subdirectory.
 
 ## Services
 
@@ -115,3 +115,21 @@ MicroFW routes traffic through two stages of iptables chains:
 NAT rules are applied in the `POSTROUTING` chain. This chain does not allow source interface matching, thus we need to match on source
 IP addresses instead. This is why for `accept+nat` rules, the source IP address field cannot be set to `ALL`, but needs to reference
 an address object instead.
+
+
+# Docker integration
+
+As with any iptables-based firewall, Docker integration has the tendency to become complicated because Docker likes to do lots of things
+with iptables, and documentation is scarce. Starting Docker with `--iptables=false` works, but is likely to break stuff (for instance,
+Drone CI won't work because it likes to create new networks, which breaks with this setting). I found it more helpful to run Docker
+with the `--ip` option and passing it one of the internal interfaces of my host.
+
+To achieve this, create a file named `/etc/systemd/system/docker.service.d/override.conf` with contents such as this:
+
+    [Service]
+    ExecStart=
+    ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --ip=127.0.0.1
+
+(Note that the empty `ExecStart=` line is required for the override to actually take effect.)
+
+This instructs Docker to bind its `docker-proxy` instances to `127.0.0.1`, so that you don't expose all your services directly to the internet.
