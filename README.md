@@ -2,6 +2,10 @@
 
 iptables firewall inspired by [shorewall](http://www.shorewall.net).
 
+* easy to configure
+* keeps rulesets in sync for IPv4 and IPv6 (but allows for divergences where necessary)
+* correctly integrates with Docker (you can run it on a Docker host and be sure Docker won't render it useless)
+
 
 # Configuration
 
