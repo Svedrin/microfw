@@ -57,34 +57,65 @@ function generate_tear_down() {
     echo 'set -e'
     echo 'set -u'
 
-    # set sane defaults: Delete all rules and user-defined chains, then set the
-    # policies to ACCEPT. we will add reject rules down the line, setting the
-    # policy to ACCEPT means that the admin can get things to work using
-    # iptables -F manually.
-    # Then, delete all ipsets.
+    if ! grep -q DOCKER "$ETC_DIR/interfaces"; then
+        # Non-Docker
+        # set sane defaults: Delete all rules and user-defined chains, then set the
+        # policies to ACCEPT. we will add reject rules down the line, setting the
+        # policy to ACCEPT means that the admin can get things to work using
+        # iptables -F manually.
 
-    echo iptables -F
-    echo iptables -X
+        echo iptables -F
+        echo iptables -X
 
-    echo iptables -t nat -F
-    echo iptables -t nat -X
+        echo iptables -t nat -F
+        echo iptables -t nat -X
 
-    echo iptables -P INPUT   ACCEPT
-    echo iptables -P FORWARD ACCEPT
-    echo iptables -P OUTPUT  ACCEPT
-
-
-    echo ip6tables -F
-    echo ip6tables -X
-
-    echo ip6tables -t nat -F
-    echo ip6tables -t nat -X
-
-    echo ip6tables -P INPUT   ACCEPT
-    echo ip6tables -P FORWARD ACCEPT
-    echo ip6tables -P OUTPUT  ACCEPT
+        echo iptables -P INPUT   ACCEPT
+        echo iptables -P FORWARD ACCEPT
+        echo iptables -P OUTPUT  ACCEPT
 
 
+        echo ip6tables -F
+        echo ip6tables -X
+
+        echo ip6tables -t nat -F
+        echo ip6tables -t nat -X
+
+        echo ip6tables -P INPUT   ACCEPT
+        echo ip6tables -P FORWARD ACCEPT
+        echo ip6tables -P OUTPUT  ACCEPT
+    else
+        # Docker
+        # don't touch INPUT/FORWARD/OUTPUT, just clear DOCKER-USER (its default is to
+        # just RETURN, so that shouldn't do any harm), and drop our custom chains.
+
+        echo iptables  -F DOCKER-USER
+
+        grep . "${ETC_DIR}/interfaces" | grep -v '^#' | while read iface zone protocols; do
+            echo iptables  -X "${zone}_inp"
+            echo ip6tables -X "${zone}_inp"
+            echo iptables  -X "${zone}_fwd"
+            echo ip6tables -X "${zone}_fwd"
+        done
+
+        # Detach MFWPREROUTING, MFWINPUT and MFWFORWARD
+        echo iptables  -t filter -D DOCKER-USER -j MFWFORWARD
+        echo ip6tables -t filter -D FORWARD     -j MFWFORWARD
+        echo iptables  -t filter -D INPUT       -j MFWINPUT
+        echo ip6tables -t filter -D INPUT       -j MFWINPUT
+        echo iptables  -t nat    -D PREROUTING  -j MFWPREROUTING
+        echo ip6tables -t nat    -D PREROUTING  -j MFWPREROUTING
+
+        # Drop MFWPREROUTING, MFWINPUT and MFWFORWARD
+        echo iptables  -X MFWFORWARD
+        echo ip6tables -X MFWFORWARD
+        echo iptables  -X MFWINPUT
+        echo ip6tables -X MFWINPUT
+        echo iptables  -X MFWPREROUTING
+        echo ip6tables -X MFWPREROUTING
+    fi
+
+    # Now, delete all ipsets.
     echo ipset flush
     echo ipset destroy
 }
