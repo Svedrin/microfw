@@ -89,13 +89,6 @@ function generate_tear_down() {
 
         echo iptables  -F DOCKER-USER
 
-        grep . "${ETC_DIR}/interfaces" | grep -v '^#' | while read iface zone protocols; do
-            echo iptables  -X "${zone}_inp"
-            echo ip6tables -X "${zone}_inp"
-            echo iptables  -X "${zone}_fwd"
-            echo ip6tables -X "${zone}_fwd"
-        done
-
         # Detach MFWPREROUTING, MFWINPUT and MFWFORWARD
         echo iptables  -t filter -D DOCKER-USER -j MFWFORWARD
         echo ip6tables -t filter -D FORWARD     -j MFWFORWARD
@@ -103,14 +96,53 @@ function generate_tear_down() {
         echo ip6tables -t filter -D INPUT       -j MFWINPUT
         echo iptables  -t nat    -D PREROUTING  -j MFWPREROUTING
         echo ip6tables -t nat    -D PREROUTING  -j MFWPREROUTING
+        echo iptables  -t nat    -D POSTROUTING -j MFWPOSTROUTING
+        echo ip6tables -t nat    -D POSTROUTING -j MFWPOSTROUTING
+
+        # Flush MFWPREROUTING, MFWINPUT and MFWFORWARD so the child chains are free
+        echo iptables  -t filter -F accept
+        echo iptables  -t filter -F drop
+        echo iptables  -t filter -F reject
+        echo ip6tables -t filter -F accept
+        echo ip6tables -t filter -F drop
+        echo ip6tables -t filter -F reject
+
+        echo iptables  -t filter -F MFWFORWARD
+        echo ip6tables -t filter -F MFWFORWARD
+        echo iptables  -t filter -F MFWINPUT
+        echo ip6tables -t filter -F MFWINPUT
+        echo iptables  -t nat    -F MFWPREROUTING
+        echo ip6tables -t nat    -F MFWPREROUTING
+        echo iptables  -t nat    -F MFWPOSTROUTING
+        echo ip6tables -t nat    -F MFWPOSTROUTING
+
+        grep . "${ETC_DIR}/interfaces" | grep -v '^#' | while read iface zone protocols; do
+            echo iptables  -F "${zone}_inp"
+            echo ip6tables -F "${zone}_inp"
+            echo iptables  -F "${zone}_fwd"
+            echo ip6tables -F "${zone}_fwd"
+            echo iptables  -X "${zone}_inp"
+            echo ip6tables -X "${zone}_inp"
+            echo iptables  -X "${zone}_fwd"
+            echo ip6tables -X "${zone}_fwd"
+        done
 
         # Drop MFWPREROUTING, MFWINPUT and MFWFORWARD
-        echo iptables  -X MFWFORWARD
-        echo ip6tables -X MFWFORWARD
-        echo iptables  -X MFWINPUT
-        echo ip6tables -X MFWINPUT
-        echo iptables  -X MFWPREROUTING
-        echo ip6tables -X MFWPREROUTING
+        echo iptables  -t filter -X accept
+        echo iptables  -t filter -X drop
+        echo iptables  -t filter -X reject
+        echo ip6tables -t filter -X accept
+        echo ip6tables -t filter -X drop
+        echo ip6tables -t filter -X reject
+
+        echo iptables  -t filter -X MFWFORWARD
+        echo ip6tables -t filter -X MFWFORWARD
+        echo iptables  -t filter -X MFWINPUT
+        echo ip6tables -t filter -X MFWINPUT
+        echo iptables  -t nat    -X MFWPREROUTING
+        echo ip6tables -t nat    -X MFWPREROUTING
+        echo iptables  -t nat    -X MFWPOSTROUTING
+        echo ip6tables -t nat    -X MFWPOSTROUTING
     fi
 
     # Now, delete all ipsets.
