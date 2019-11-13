@@ -537,13 +537,13 @@ def generate_setup():
     # Now determine where to plug into. If docker is present on this system
     # (as indicated by a DOCKER zone existing), plug into DOCKER-USER; otherwise
     # plug directly into FORWARD.
+    # Since Docker completely ignores IPv6, attach to FORWARD there regardless.
     if "DOCKER" in all_zones:
         print("iptables  -t filter -I DOCKER-USER -j MFWFORWARD")
-        print("ip6tables -t filter -I DOCKER-USER -j MFWFORWARD")
     else:
         print("iptables  -t filter -I FORWARD     -j MFWFORWARD")
-        print("ip6tables -t filter -I FORWARD     -j MFWFORWARD")
 
+    print("ip6tables -t filter -I FORWARD     -j MFWFORWARD")
     print("iptables  -t filter -I INPUT       -j MFWINPUT")
     print("ip6tables -t filter -I INPUT       -j MFWINPUT")
     print("iptables  -t nat    -I PREROUTING  -j MFWPREROUTING")
