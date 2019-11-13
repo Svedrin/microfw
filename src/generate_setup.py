@@ -408,7 +408,7 @@ def generate_setup():
     for virtual in all_virtuals:
         # We basically do the same thing we did for rules, but for each entry in virtuals,
         # we need to create _two_ rules:
-        # One for PREROUTING to perform the DNAT on the external IPs, and
+        # One for MFWPREROUTING to perform the DNAT on the external IPs, and
         # one for MFWFORWARD to allow the traffic that results from this.
 
         def iptables():
@@ -446,7 +446,7 @@ def generate_setup():
             return _filter_service
 
         def render_cmd(cmd):
-            fmt_dnat = "%(cmd)s -t 'nat'    -A 'PREROUTING' -i '%(iface)s' -d '%(extaddr)s' "
+            fmt_dnat = "%(cmd)s -t 'nat'    -A 'MFWPREROUTING' -i '%(iface)s' -d '%(extaddr)s' "
             fmt_fltr = "%(cmd)s -t 'filter' -A 'MFWFORWARD'    -i '%(iface)s' -d '%(intaddr)s' "
 
             if cmd.get("extservice"):
