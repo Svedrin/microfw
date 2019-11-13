@@ -137,24 +137,24 @@ an address object instead.
 Here's how incoming packets are routed:
 
 ```
-        NAT                            |                             FILTER
+           NAT                     |                             FILTER
 
-             +---------------+         |         +---------------+       +---------------+
- --------->  |   PREROUTING  |                   |    FORWARD    |------>|  DOCKER-USER  |
-             +---------------+         |         +---------------+       +---------------+
-                     |                                   ^                       |
-                     v                 |                 |                       v
-             +---------------+                 NO:       |               +---------------+      +---------------+
-             | MFWPREROUTING |         |  For Container  |               |  MFWFORWARD   |----->|   DOCKER      |
-             +---------------+            For VM         |               +---------------+      +---------------+
-                     |                 |  For whomever   |
-                     v                               --------
-             +---------------+         |            /   For  \           +---------------+      +---------------+
-             |    DOCKER     | ---------------->   *    me?   *  ------->|  INPUT        |----->|   MFWINPUT    |
-             +---------------+         |            \        /           +---------------+      +---------------+
-                                                     --------    YES:
-                                                               Local services,
-                                                               docker-proxy
+         +---------------+         |         +---------------+       +---------------+
+ ----->  |   PREROUTING  |                   |    FORWARD    |------>|  DOCKER-USER  |
+         +---------------+         |         +---------------+       +---------------+
+                 |                                   ^                       |
+                 v                 |                 |                       v
+         +---------------+                 NO:       |               +---------------+      +---------------+
+         | MFWPREROUTING |         |  For Container  |               |  MFWFORWARD   |----->|   DOCKER      |
+         +---------------+            For VM         |               +---------------+      +---------------+
+                 |                 |  For whomever   |
+                 v                               --------
+         +---------------+         |            /   For  \           +---------------+      +---------------+
+         |    DOCKER     | ---------------->   *    me?   *  ------->|  INPUT        |----->|   MFWINPUT    |
+         +---------------+         |            \        /           +---------------+      +---------------+
+                                                 --------    YES:
+                                                           Local services,
+                                                           docker-proxy
 ```
 
 If Docker is not present on a system, all docker-related chains are skipped and MicroFW plugs directly into `FORWARD`.
