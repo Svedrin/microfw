@@ -7,10 +7,14 @@
 #
 # If you need multiple protocols on a single interface, separate them by commas.
 #
+# If you're running docker, be sure to add all docker-managed bridges to a special
+# zone named DOCKER. Existance of this zone will switch MicroFW into Docker mode,
+# which makes sure that MicroFW and Docker integrate cleanly.
+#
 # Interface        Zone        Protocols
 
 eth0               ext         gre
 eth1               int         -
 tun0               int         ospf
 gre0               int         ospf
-docker0            int         -
+docker0            DOCKER      -
