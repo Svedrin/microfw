@@ -84,10 +84,8 @@ function generate_tear_down() {
         echo ip6tables -P OUTPUT  ACCEPT
     else
         # Docker
-        # don't touch INPUT/FORWARD/OUTPUT, just clear DOCKER-USER (its default is to
-        # just RETURN, so that shouldn't do any harm), and drop our custom chains.
-
-        echo iptables  -F DOCKER-USER
+        # don't touch INPUT/FORWARD/OUTPUT, leave all the DOCKER chains alone;
+        # just detach and drop our custom chains.
 
         # Detach MFWPREROUTING, MFWINPUT and MFWFORWARD
         echo iptables  -t filter -D DOCKER-USER -j MFWFORWARD
