@@ -166,7 +166,7 @@ def generate_setup():
             )
         if virtual.intaddr == "ALL":
             raise ValueError("virtuals:%d: Internal Address cannot be ALL" % virtual.lineno)
-        if virtual.intaddr not in all_addresses:
+        if virtual.intaddr not in all_addresses and virtual.intaddr != "DOCKER":
             raise ValueError(
                 "virtuals:%d: Internal Address '%s' does not exist" % (
                     virtual.lineno, virtual.intaddr
@@ -176,6 +176,12 @@ def generate_setup():
             if virtual.extservice != virtual.intservice:
                 raise ValueError(
                     "virtuals:%d: When setting one service to ALL, the other must also be ALL" % (
+                        virtual.lineno
+                    )
+                )
+            if virtual.intaddr == "DOCKER":
+                raise ValueError(
+                    "virtuals:%d: Cannot expose ALL ports to a Docker container (INPUT chain would blow up)" % (
                         virtual.lineno
                     )
                 )
@@ -203,7 +209,7 @@ def generate_setup():
     ) | set(
         all_addresses[virtual.extaddr] for virtual in all_virtuals if virtual.extaddr != "ALL"
     ) | set(
-        all_addresses[virtual.intaddr] for virtual in all_virtuals if virtual.intaddr != "ALL"
+        all_addresses[virtual.intaddr] for virtual in all_virtuals if virtual.intaddr not in ("ALL", "DOCKER")
     )
 
     used_services = set(
@@ -422,7 +428,10 @@ def generate_setup():
 
         def address(addr, which_one):
             def _filter_addr(cmd):
-                if cmd["cmd"] == "iptables":
+                # Passthrough DOCKER as a string; resolve everything else
+                if which_one == "int" and addr == "DOCKER":
+                    yield dict(cmd, intaddr="DOCKER")
+                elif cmd["cmd"] == "iptables":
                     if all_addresses[addr].v4 != '-':
                         yield dict(cmd, **{ "%saddr" % which_one : all_addresses[addr].v4 })
                 else:
@@ -446,25 +455,53 @@ def generate_setup():
             return _filter_service
 
         def render_cmd(cmd):
-            fmt_dnat = "%(cmd)s -t 'nat'    -A 'MFWPREROUTING' -i '%(iface)s' -d '%(extaddr)s' "
-            fmt_fltr = "%(cmd)s -t 'filter' -A 'MFWFORWARD'    -i '%(iface)s' -d '%(intaddr)s' "
+            # What to do here depends on whether or not we're talking about a Docker service.
+            if cmd["intaddr"] != "DOCKER":
+                # Non-Docker. We need to configure PREROUTING with a DNAT rule, and allow that
+                # traffic through FORWARD.
+                fmt_dnat = "%(cmd)s -t 'nat'    -A 'MFWPREROUTING' -i '%(iface)s' -d '%(extaddr)s' "
+                fmt_fltr = "%(cmd)s -t 'filter' -A 'MFWFORWARD'    -i '%(iface)s' -d '%(intaddr)s' "
 
-            if cmd.get("extservice"):
-                fmt_dnat += "-p '%(proto)s' -m '%(proto)s' --dport '%(extservice)s' "
-                fmt_fltr += "-p '%(proto)s' -m '%(proto)s' --dport '%(intservice)s' "
+                if cmd.get("extservice"):
+                    fmt_dnat += "-p '%(proto)s' -m '%(proto)s' --dport '%(extservice)s' "
+                    fmt_fltr += "-p '%(proto)s' -m '%(proto)s' --dport '%(intservice)s' "
 
-                cmd["extservice"] = cmd["extservice"].replace("-", ":")
-                cmd["intservice"] = cmd["intservice"].replace("-", ":")
+                    cmd["extservice"] = cmd["extservice"].replace("-", ":")
+                    cmd["intservice"] = cmd["intservice"].replace("-", ":")
 
-            if virtual.intservice == virtual.extservice:
-                fmt_dnat += "-j DNAT --to-destination '%(intaddr)s'"
-                fmt_fltr += "-j ACCEPT"
+                if virtual.intservice == virtual.extservice:
+                    fmt_dnat += "-j DNAT --to-destination '%(intaddr)s'"
+                    fmt_fltr += "-j ACCEPT"
+                else:
+                    fmt_dnat += "-j DNAT --to-destination '%(intaddr)s:%(intservice)s'"
+                    fmt_fltr += "-j ACCEPT"
+
+                yield fmt_dnat % cmd
+                yield fmt_fltr % cmd
+
             else:
-                fmt_dnat += "-j DNAT --to-destination '%(intaddr)s:%(intservice)s'"
-                fmt_fltr += "-j ACCEPT"
+                # Docker. PREROUTING's gonna be handled by Docker, but Docker _also_ spawns a
+                # docker-proxy on the host, which is reachable through INPUT. Thus:
+                # * PREROUTING: Nothing to do, Docker handles that
+                # * FORWARD needs to allow traffic to intservice on Docker networks. We rely
+                #           on Docker routing traffic to the correct host here and simply
+                #           allow _all_ Docker interfaces to receive this traffic.
+                # * INPUT needs to allow traffic to extservice (where docker-proxy listens).
+                for interface in all_interfaces:
+                    if interface.zone == "DOCKER":
+                        fmt_fltr = (
+                            "%(cmd)s -A 'MFWFILTER' -i '%(iface)s' -o '%(dstiface)s' "
+                            "-p '%(proto)s' -m '%(proto)s' --dport '%(intservice)s' "
+                            "-j ACCEPT"
+                        )
+                        yield fmt_fltr % dict(cmd, dstiface=interface.name)
 
-            yield fmt_dnat % cmd
-            yield fmt_fltr % cmd
+                fmt_inpt = (
+                    "%(cmd)s -A 'MFWINPUT' -i '%(iface)s' "
+                    "-p '%(proto)s' -m '%(proto)s' --dport '%(extservice)s' "
+                    "-j ACCEPT"
+                )
+                yield fmt_inpt % cmd
 
         pipeline = [
             iptables(),
