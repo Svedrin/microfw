@@ -114,7 +114,13 @@ function generate_tear_down() {
         echo iptables  -t nat    -F MFWPOSTROUTING
         echo ip6tables -t nat    -F MFWPOSTROUTING
 
-        grep . "${ETC_DIR}/interfaces" | grep -v '^#' | while read iface zone protocols; do
+        ALL_ZONES=$(
+            grep . "${ETC_DIR}/interfaces" | grep -v '^#' | while read iface zone protocols; do
+                echo "$zone"
+            done | sort | uniq
+        )
+
+        for zone in $ALL_ZONES; do
             echo iptables  -F "${zone}_inp"
             echo ip6tables -F "${zone}_inp"
             echo iptables  -F "${zone}_fwd"
