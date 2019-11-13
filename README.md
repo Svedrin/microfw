@@ -60,6 +60,18 @@ ICMP traffic is allowed by default. However, if you define an explicit rule to r
 A list of virtual services to expose via DNAT.
 
 
+# Docker integration
+
+MicroFW is developed with Docker in mind, and is supposed to Just Work with Docker present. To make sure this works, be sure to list
+your `docker0` bridge in your `interfaces` file as such:
+
+    # Interface        Zone        Protocols
+    docker0            DOCKER      -
+
+In the presence of a `DOCKER` zone, MicroFW will attach all its rules to the `DOCKER-USER` chain to ensure Docker and MicroFW play
+nicely with one another. (Requires a fairly up-to-date version of Docker though.)
+
+
 # Installation
 
 You can either set things up manually, or use the Ansible playbook provided in the `ansible` directory.
@@ -115,19 +127,8 @@ MicroFW routes traffic through two stages of iptables chains:
 
     This stage then makes a decision on acceptance or rejection for TCP and UDP packets.
 
-
 NAT rules are applied in the `POSTROUTING` chain. This chain does not allow source interface matching, thus we need to match on source
 IP addresses instead. This is why for `accept+nat` rules, the source IP address field cannot be set to `ALL`, but needs to reference
 an address object instead.
 
 
-# Docker integration
-
-MicroFW is developed with Docker in mind, and is supposed to Just Work with Docker present. To make sure this works, be sure to list
-your `docker0` bridge in your `interfaces` file as such:
-
-    # Interface        Zone        Protocols
-    docker0            DOCKER      -
-
-In the presence of a `DOCKER` zone, MicroFW will attach all its rules to the `DOCKER-USER` chain to ensure Docker and MicroFW play
-nicely with one another. (Requires a fairly up-to-date version of Docker though.)
