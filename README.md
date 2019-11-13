@@ -157,6 +157,8 @@ Here's how incoming packets are routed:
                                                                docker-proxy
 ```
 
+If Docker is not present on a system, all docker-related chains are skipped and MicroFW plugs directly into `FORWARD`.
+
 ## Egress path
 
 Outgoing packets are only routed through the `MWFPOSTROUTING` chain if they match an `accept+nat` rule, in which case they
