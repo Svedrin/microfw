@@ -247,6 +247,13 @@ def generate_setup():
 
     print("")
 
+    print("iptables  -t filter -N MFWINPUT")
+    print("ip6tables -t filter -N MFWINPUT")
+    print("iptables  -t filter -N MFWFORWARD")
+    print("ip6tables -t filter -N MFWFORWARD")
+    print("iptables  -t nat    -N MFWPREROUTING")
+    print("ip6tables -t nat    -N MFWPREROUTING")
+
     # Generate implicit accept rules for lo, icmp and related
 
     print("iptables  -A MFWINPUT   -i lo   -j ACCEPT")
