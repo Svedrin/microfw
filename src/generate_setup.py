@@ -497,7 +497,7 @@ def generate_setup():
                 for interface in all_interfaces:
                     if interface.zone == "DOCKER":
                         fmt_fltr = (
-                            "%(cmd)s -A 'MFWFILTER' -i '%(iface)s' -o '%(dstiface)s' "
+                            "%(cmd)s -A 'MFWFORWARD' -i '%(iface)s' -o '%(dstiface)s' "
                             "-p '%(proto)s' -m '%(proto)s' --dport '%(intservice)s' "
                             "-j ACCEPT"
                         )
