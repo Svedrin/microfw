@@ -243,14 +243,14 @@ def generate_setup():
 
     # Generate implicit accept rules for lo, icmp and related
 
-    print("iptables  -A INPUT   -i lo   -j ACCEPT")
-    print("ip6tables -A INPUT   -i lo   -j ACCEPT")
+    print("iptables  -A MFWINPUT   -i lo   -j ACCEPT")
+    print("ip6tables -A MFWINPUT   -i lo   -j ACCEPT")
 
-    print("iptables  -A INPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
-    print("ip6tables -A INPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    print("iptables  -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    print("ip6tables -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
 
-    print("iptables  -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
-    print("ip6tables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    print("iptables  -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    print("ip6tables -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
 
     # Generate action chains
 
@@ -287,26 +287,26 @@ def generate_setup():
         print("iptables  -N '%s_fwd'" % zone)
         print("ip6tables -N '%s_fwd'" % zone)
 
-    # Generate rules to route traffic from INPUT and FORWARD to those chains
+    # Generate rules to route traffic from MFWINPUT and MFWFORWARD to those chains
 
     for interface in all_interfaces:
         if interface.protocols != "-":
             for proto in interface.protocols.split(","):
-                print("iptables  -A INPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
-                print("ip6tables -A INPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
+                print("iptables  -A MFWINPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
+                print("ip6tables -A MFWINPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
 
         # Route incoming traffic to zone-specific input chains
-        printf("iptables  -A INPUT   -i '%(name)s' -j '%(zone)s_inp'", interface)
-        printf("ip6tables -A INPUT   -i '%(name)s' -j '%(zone)s_inp'", interface)
+        printf("iptables  -A MFWINPUT   -i '%(name)s' -j '%(zone)s_inp'", interface)
+        printf("ip6tables -A MFWINPUT   -i '%(name)s' -j '%(zone)s_inp'", interface)
 
         # We will never allow hairpin traffic though (traffic cannot be
         # forwarded out the same interface where it came in)
-        printf("iptables  -A FORWARD -i '%(name)s' -o '%(name)s' -j drop", interface)
-        printf("ip6tables -A FORWARD -i '%(name)s' -o '%(name)s' -j drop", interface)
+        printf("iptables  -A MFWFORWARD -i '%(name)s' -o '%(name)s' -j drop", interface)
+        printf("ip6tables -A MFWFORWARD -i '%(name)s' -o '%(name)s' -j drop", interface)
 
         # Route incoming traffic to zone-specific forward chains
-        printf("iptables  -A FORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
-        printf("ip6tables -A FORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
+        printf("iptables  -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
+        printf("ip6tables -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
 
     # Generate rules to implement filtering
 
@@ -409,7 +409,7 @@ def generate_setup():
         # We basically do the same thing we did for rules, but for each entry in virtuals,
         # we need to create _two_ rules:
         # One for PREROUTING to perform the DNAT on the external IPs, and
-        # one for FORWARD to allow the traffic that results from this.
+        # one for MFWFORWARD to allow the traffic that results from this.
 
         def iptables():
             yield dict(cmd="iptables")
@@ -447,7 +447,7 @@ def generate_setup():
 
         def render_cmd(cmd):
             fmt_dnat = "%(cmd)s -t 'nat'    -A 'PREROUTING' -i '%(iface)s' -d '%(extaddr)s' "
-            fmt_fltr = "%(cmd)s -t 'filter' -A 'FORWARD'    -i '%(iface)s' -d '%(intaddr)s' "
+            fmt_fltr = "%(cmd)s -t 'filter' -A 'MFWFORWARD'    -i '%(iface)s' -d '%(intaddr)s' "
 
             if cmd.get("extservice"):
                 fmt_dnat += "-p '%(proto)s' -m '%(proto)s' --dport '%(extservice)s' "
@@ -482,18 +482,18 @@ def generate_setup():
 
     # Accept icmp by default, unless a previous rule explicitly rejected/dropped it
 
-    print("iptables  -A INPUT   -p icmp -j ACCEPT")
-    print("iptables  -A FORWARD -p icmp -j ACCEPT")
+    print("iptables  -A MFWINPUT   -p icmp -j ACCEPT")
+    print("iptables  -A MFWFORWARD -p icmp -j ACCEPT")
 
-    print("ip6tables -A INPUT   -p icmpv6 -j ACCEPT")
-    print("ip6tables -A FORWARD -p icmpv6 -j ACCEPT")
+    print("ip6tables -A MFWINPUT   -p icmpv6 -j ACCEPT")
+    print("ip6tables -A MFWFORWARD -p icmpv6 -j ACCEPT")
 
     # Generate last-resort reject rules
 
-    print("iptables  -A INPUT   -j reject")
-    print("ip6tables -A INPUT   -j reject")
-    print("iptables  -A FORWARD -j reject")
-    print("ip6tables -A FORWARD -j reject")
+    print("iptables  -A MFWINPUT   -j reject")
+    print("ip6tables -A MFWINPUT   -j reject")
+    print("iptables  -A MFWFORWARD -j reject")
+    print("ip6tables -A MFWFORWARD -j reject")
 
     # Prepare chains for Docker. (Afaict Docker only adds reject/drop rules, but does
     # not add any ACCEPT rules by itself, so the rest of our firewall should still
