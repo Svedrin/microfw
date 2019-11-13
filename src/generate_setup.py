@@ -253,6 +253,8 @@ def generate_setup():
     print("ip6tables -t filter -N MFWFORWARD")
     print("iptables  -t nat    -N MFWPREROUTING")
     print("ip6tables -t nat    -N MFWPREROUTING")
+    print("iptables  -t nat    -N MFWPOSTROUTING")
+    print("ip6tables -t nat    -N MFWPOSTROUTING")
 
     # Generate implicit accept rules for lo, icmp and related
 
@@ -378,7 +380,7 @@ def generate_setup():
         def action(cmd):
             if rule.action == "accept+nat":
                 yield dict(cmd, action="accept")
-                yield dict(cmd, table="nat", chain="POSTROUTING", action="MASQUERADE")
+                yield dict(cmd, table="nat", chain="MFWPOSTROUTING", action="MASQUERADE")
             else:
                 yield dict(cmd, action=rule.action)
 
@@ -555,6 +557,8 @@ def generate_setup():
     print("ip6tables -t filter -I INPUT       -j MFWINPUT")
     print("iptables  -t nat    -I PREROUTING  -j MFWPREROUTING")
     print("ip6tables -t nat    -I PREROUTING  -j MFWPREROUTING")
+    print("iptables  -t nat    -I POSTROUTING -j MFWPOSTROUTING")
+    print("ip6tables -t nat    -I POSTROUTING -j MFWPOSTROUTING")
 
 
 if __name__ == '__main__':
