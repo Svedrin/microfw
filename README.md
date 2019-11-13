@@ -132,3 +132,32 @@ IP addresses instead. This is why for `accept+nat` rules, the source IP address 
 an address object instead.
 
 
+## Ingress path
+
+Here's how incoming packets are routed:
+
+```
+        NAT                            |                             FILTER
+
+             +---------------+         |         +---------------+       +---------------+
+ --------->  |   PREROUTING  |                   |    FORWARD    |------>|  DOCKER-USER  |
+             +---------------+         |         +---------------+       +---------------+
+                     |                                   ^                       |
+                     v                 |                 |                       v
+             +---------------+                 NO:       |               +---------------+      +---------------+
+             | MFWPREROUTING |         |  For Container  |               |  MFWFORWARD   |----->|   DOCKER      |
+             +---------------+            For VM         |               +---------------+      +---------------+
+                     |                 |  For whomever   |
+                     v                               --------
+             +---------------+         |            /   For  \           +---------------+      +---------------+
+             |    DOCKER     | ---------------->   *    me?   *  ------->|  INPUT        |----->|   MFWINPUT    |
+             +---------------+         |            \        /           +---------------+      +---------------+
+                                                     --------    YES:
+                                                               Local services,
+                                                               docker-proxy
+```
+
+## Egress path
+
+Outgoing packets are only routed through the `MWFPOSTROUTING` chain if they match an `accept+nat` rule, in which case they
+are masqueraded. In all other cases, outgoing packets are left alone.
