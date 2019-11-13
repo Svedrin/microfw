@@ -54,8 +54,6 @@ fi
 
 function generate_tear_down() {
     echo '#!/bin/bash'
-    echo 'set -e'
-    echo 'set -u'
 
     if ! grep -q DOCKER "$ETC_DIR/interfaces"; then
         # Non-Docker
