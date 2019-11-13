@@ -495,16 +495,7 @@ def generate_setup():
     print("iptables  -A MFWFORWARD -j reject")
     print("ip6tables -A MFWFORWARD -j reject")
 
-    # Prepare chains for Docker. (Afaict Docker only adds reject/drop rules, but does
-    # not add any ACCEPT rules by itself, so the rest of our firewall should still
-    # continue to work. No guarantees about ports forwarded through `-p` though.)
 
-    print("iptables -t nat -N DOCKER")
-    print("iptables -N DOCKER")
-    print("iptables -N DOCKER-ISOLATION-STAGE-1")
-    print("iptables -N DOCKER-ISOLATION-STAGE-2")
-    print("iptables -N DOCKER-USER")
 
 if __name__ == '__main__':
     generate_setup()
-
