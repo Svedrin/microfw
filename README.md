@@ -46,7 +46,6 @@ One rule consists of:
 Actions can be:
 
 *   `accept+nat`: Allow the traffic and apply masquerading. To the destination, it will appear as if the traffic originated from the firewall.
-    Note that for such rules, the source address field must not be set to `ALL`.
 *   `accept`: Allow the traffic.
 *   `reject`: Block the traffic, and send a notification back to the sender to let them _know_ they were blocked.
 *   `drop`: Block the traffic without letting the sender know. They'll just run into a timeout.
@@ -126,10 +125,6 @@ MicroFW routes traffic through two stages of iptables chains:
     * destination TCP and UDP ports.
 
     This stage then makes a decision on acceptance or rejection for TCP and UDP packets.
-
-NAT rules are applied in the `POSTROUTING` chain. This chain does not allow source interface matching, thus we need to match on source
-IP addresses instead. This is why for `accept+nat` rules, the source IP address field cannot be set to `ALL`, but needs to reference
-an address object instead.
 
 
 ## Ingress path
