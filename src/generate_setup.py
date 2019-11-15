@@ -2,6 +2,7 @@
 
 import sys
 import os.path
+import itertools
 
 from functools   import reduce
 from collections import namedtuple
@@ -78,6 +79,8 @@ def printf(fmt, obj):
 def generate_setup():
     # Parse tables
 
+    mark_gen = itertools.count(0x400)
+
     all_addresses = {
         address.name: address
         for address in read_table("addresses")
@@ -146,10 +149,6 @@ def generate_setup():
                         rule.lineno, rule.service
                     )
                 )
-        if rule.action == "accept+nat" and rule.srcaddr == "ALL":
-            raise ValueError(
-                "rules:%d: Source address cannot be ALL for accept+nat rules" % rule.lineno
-            )
 
     for virtual in all_virtuals:
         if virtual.srczone in ("FW", "ALL"):
@@ -303,6 +302,8 @@ def generate_setup():
         print("ip6tables -N '%s_inp'" % zone)
         print("iptables  -N '%s_fwd'" % zone)
         print("ip6tables -N '%s_fwd'" % zone)
+        print("iptables  -t mangle -N '%s_fwd'" % zone)
+        print("ip6tables -t mangle -N '%s_fwd'" % zone)
 
     # Generate rules to route traffic from MFWINPUT and MFWFORWARD to those chains
 
@@ -324,6 +325,8 @@ def generate_setup():
         # Route incoming traffic to zone-specific forward chains
         printf("iptables  -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
         printf("ip6tables -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
+        printf("iptables  -t mangle -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
+        printf("ip6tables -t mangle -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
 
     # Generate rules to implement filtering
 
@@ -382,7 +385,14 @@ def generate_setup():
         def action(cmd):
             if rule.action == "accept+nat":
                 yield dict(cmd, action="accept")
-                yield dict(cmd, table="nat", chain="MFWPOSTROUTING", action="MASQUERADE")
+                if rule.srcaddr == "ALL":
+                    # mark in mangle, masq in postrouting
+                    current_mark = next(mark_gen)
+                    yield dict(cmd, table="mangle",                         action="MARK",       mark_set=current_mark)
+                    yield dict(cmd, table="nat",    chain="MFWPOSTROUTING", action="MASQUERADE", mark_match=current_mark)
+                else:
+                    # postrouting will suffice
+                    yield dict(cmd, table="nat",    chain="MFWPOSTROUTING", action="MASQUERADE")
             else:
                 yield dict(cmd, action=rule.action)
 
@@ -397,9 +407,13 @@ def generate_setup():
                 fmt += "-m set --match-set '%(srcaddr)s' src "
             if cmd.get("dstaddr"):
                 fmt += "-m set --match-set '%(dstaddr)s' dst "
+            if cmd.get("mark_match"):
+                fmt += "-m mark --mark 0x%(mark_match)x "
             if cmd.get("service"):
                 fmt += "-p '%(proto)s' -m set --match-set '%(service)s' dst "
             fmt += "-j %(action)s"
+            if cmd.get("mark_set"):
+                fmt += " --set-mark 0x%(mark_set)x"
             yield fmt % cmd
 
         # Create a pipeline of steps ready to be consumed by reduce.
