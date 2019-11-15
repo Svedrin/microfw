@@ -70,6 +70,9 @@ function generate_tear_down() {
         echo iptables -t nat -F
         echo iptables -t nat -X
 
+        echo iptables -t mangle -F
+        echo iptables -t mangle -X
+
         echo iptables -P INPUT   ACCEPT
         echo iptables -P FORWARD ACCEPT
         echo iptables -P OUTPUT  ACCEPT
@@ -80,6 +83,9 @@ function generate_tear_down() {
 
         echo ip6tables -t nat -F
         echo ip6tables -t nat -X
+
+        echo ip6tables -t mangle -F
+        echo ip6tables -t mangle -X
 
         echo ip6tables -P INPUT   ACCEPT
         echo ip6tables -P FORWARD ACCEPT
@@ -94,6 +100,8 @@ function generate_tear_down() {
         echo ip6tables -t filter -D FORWARD     -j MFWFORWARD
         echo iptables  -t filter -D INPUT       -j MFWINPUT
         echo ip6tables -t filter -D INPUT       -j MFWINPUT
+        echo iptables  -t mangle -D FORWARD     -j MFWFORWARD
+        echo ip6tables -t mangle -D FORWARD     -j MFWFORWARD
         echo iptables  -t nat    -D PREROUTING  -j MFWPREROUTING
         echo ip6tables -t nat    -D PREROUTING  -j MFWPREROUTING
         echo iptables  -t nat    -D POSTROUTING -j MFWPOSTROUTING
@@ -111,6 +119,8 @@ function generate_tear_down() {
         echo ip6tables -t filter -F MFWFORWARD
         echo iptables  -t filter -F MFWINPUT
         echo ip6tables -t filter -F MFWINPUT
+        echo iptables  -t mangle -F MFWFORWARD
+        echo ip6tables -t mangle -F MFWFORWARD
         echo iptables  -t nat    -F MFWPREROUTING
         echo ip6tables -t nat    -F MFWPREROUTING
         echo iptables  -t nat    -F MFWPOSTROUTING
@@ -145,6 +155,8 @@ function generate_tear_down() {
         echo ip6tables -t filter -X MFWFORWARD
         echo iptables  -t filter -X MFWINPUT
         echo ip6tables -t filter -X MFWINPUT
+        echo iptables  -t mangle -X MFWFORWARD
+        echo ip6tables -t mangle -X MFWFORWARD
         echo iptables  -t nat    -X MFWPREROUTING
         echo ip6tables -t nat    -X MFWPREROUTING
         echo iptables  -t nat    -X MFWPOSTROUTING
