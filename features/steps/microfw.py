@@ -54,6 +54,26 @@ def step(context):
         for rule in generate_setup.generate_setup(tables)
     ]
 
+@then("rule compilation raises a ValueError")
+def step(context):
+    tables = generate_setup.Tables(
+        context.tables["addresses"],
+        context.tables["services"],
+        context.tables["interfaces"],
+        context.tables["rules"],
+        context.tables["virtuals"]
+    )
+    try:
+        context.rules = [
+            # replace multiple spaces with a single space to have whitespace changes not matter
+            re.sub(' +', ' ', rule)
+            for rule in generate_setup.generate_setup(tables)
+        ]
+    except ValueError:
+        return
+    else:
+        assert False, "expected ValueError, but didn't get one"
+
 @then("these rules exist")
 def step(context):
     for rule in context.text.strip().split("\n"):
