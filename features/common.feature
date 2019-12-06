@@ -4,8 +4,9 @@ Feature: Stuff where none of the more specific features matter.
 
     Let's validate that the example configuration from the etc directory actually
     parses, and that the address and service objects are unpacked into ipsets correctly.
-    Also validate the basics such as accept/drop/reject chains and RELATED,ESTABLISHED
-    rules and protocol-based rules.
+    Also validate the basics such as accept/drop/reject chains, RELATED,ESTABLISHED rules,
+    protocol-based rules, basic virtuals and make sure that objects that should not be
+    created are not just being created anyway.
 
     Given addresses table from etc
       And services table from etc
@@ -60,8 +61,40 @@ Feature: Stuff where none of the more specific features matter.
         iptables  -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
         ip6tables -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
 
+        iptables  -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
+        ip6tables -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
+        iptables  -A MFWFORWARD -i 'eth0' -j 'ext_fwd'
+        ip6tables -A MFWFORWARD -i 'eth0' -j 'ext_fwd'
+        iptables  -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
+        ip6tables -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
+        iptables  -A MFWFORWARD -i 'eth1' -j 'int_fwd'
+        ip6tables -A MFWFORWARD -i 'eth1' -j 'int_fwd'
+
+        iptables  -A 'ext_fwd' -o 'eth0' -j reject
+        iptables  -A 'ext_fwd' -o 'eth1' -j reject
+        ip6tables -A 'ext_fwd' -o 'eth0' -j reject
+        ip6tables -A 'ext_fwd' -o 'eth1' -j reject
+
+        iptables  -A 'int_fwd' -o 'eth1' -j accept
+        ip6tables -A 'int_fwd' -o 'eth1' -j accept
+
+        iptables  -A 'int_fwd' -o 'eth0' -m set --match-set 'lan_home_v4' src -m set --match-set 'google_v4' dst -p 'tcp' -m set --match-set 'http_tcp' dst -j accept
+        ip6tables -A 'int_fwd' -o 'eth0' -m set --match-set 'lan_home_v6' src -m set --match-set 'google_v6' dst -p 'tcp' -m set --match-set 'http_tcp' dst -j accept
+
         iptables  -t 'nat'    -A 'MFWPREROUTING' -i 'eth0' -d '123.123.123.123' -p 'tcp' -m 'tcp' --dport '443' -j DNAT --to-destination '192.168.0.1'
         iptables  -t 'filter' -A 'MFWFORWARD'    -i 'eth0' -d '192.168.0.1'     -p 'tcp' -m 'tcp' --dport '443' -j ACCEPT
         ip6tables -t 'nat'    -A 'MFWPREROUTING' -i 'eth0' -d '2a01::1'         -p 'tcp' -m 'tcp' --dport '443' -j DNAT --to-destination '2a01::1111:1111'
         ip6tables -t 'filter' -A 'MFWFORWARD'    -i 'eth0' -d '2a01::1111:1111' -p 'tcp' -m 'tcp' --dport '443' -j ACCEPT
+        """
+      And these rules do NOT exist
+        """
+        ipset create 'http_udp' bitmap:port range 1-65535
+        ipset add    'http_udp' '80'
+        ipset create 'bgp_tcp' bitmap:port range 1-65535
+        ipset add    'bgp_tcp' '179'
+        ipset create 'bgp_udp' bitmap:port range 1-65535
+        ipset add    'bgp_udp' '179'
+
+        ip6tables -A 'int_fwd' -o 'eth0' -m set --match-set 'lan_home_v4' src -m set --match-set 'google_v4' dst -p 'tcp' -m set --match-set 'http_tcp' dst -j accept
+        iptables  -A 'int_fwd' -o 'eth0' -m set --match-set 'lan_home_v6' src -m set --match-set 'google_v6' dst -p 'tcp' -m set --match-set 'http_tcp' dst -j accept
         """
