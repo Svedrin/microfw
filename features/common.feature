@@ -56,13 +56,13 @@ Feature: Stuff where none of the more specific features matter.
         ip6tables -A reject -p tcp -j REJECT --reject-with tcp-reset
         ip6tables -A reject -j REJECT --reject-with icmp6-adm-prohibited
 
-        iptables  -A MFWINPUT -i 'eth0' -p 'gre'  -j ACCEPT
-        ip6tables -A MFWINPUT -i 'eth0' -p 'gre'  -j ACCEPT
-
+        iptables  -A MFWINPUT   -i 'eth0' -p 'gre'  -j ACCEPT
+        ip6tables -A MFWINPUT   -i 'eth0' -p 'gre'  -j ACCEPT
         iptables  -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
         ip6tables -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
         iptables  -A MFWFORWARD -i 'eth0' -j 'ext_fwd'
         ip6tables -A MFWFORWARD -i 'eth0' -j 'ext_fwd'
+
         iptables  -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
         ip6tables -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
         iptables  -A MFWFORWARD -i 'eth1' -j 'int_fwd'
