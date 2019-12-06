@@ -59,4 +59,9 @@ Feature: Stuff where none of the more specific features matter.
         ip6tables -A MFWINPUT -i 'eth0' -p 'gre'  -j ACCEPT
         iptables  -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
         ip6tables -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
+
+        iptables  -t 'nat'    -A 'MFWPREROUTING' -i 'eth0' -d '123.123.123.123' -p 'tcp' -m 'tcp' --dport '443' -j DNAT --to-destination '192.168.0.1'
+        iptables  -t 'filter' -A 'MFWFORWARD'    -i 'eth0' -d '192.168.0.1'     -p 'tcp' -m 'tcp' --dport '443' -j ACCEPT
+        ip6tables -t 'nat'    -A 'MFWPREROUTING' -i 'eth0' -d '2a01::1'         -p 'tcp' -m 'tcp' --dport '443' -j DNAT --to-destination '2a01::1111:1111'
+        ip6tables -t 'filter' -A 'MFWFORWARD'    -i 'eth0' -d '2a01::1111:1111' -p 'tcp' -m 'tcp' --dport '443' -j ACCEPT
         """
