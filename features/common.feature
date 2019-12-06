@@ -1,4 +1,4 @@
-Feature: Stuff where "docker or no" doesn't matter.
+Feature: Stuff where none of the more specific features matter.
 
   Scenario: Example configuration.
 

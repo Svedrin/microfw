@@ -10,6 +10,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(os.path.join(BASE_DIR, "src"))
 import generate_setup
 
+@given("{tabletype} table of")
+def step(context, tabletype):
+    if not hasattr(context, "tables"):
+        context.tables = {}
+    context.tables[tabletype] = generate_setup.parse_table(
+        filename = tabletype,
+        table    = StringIO(context.text.strip())
+    )
+
 @given("{tabletype} table from {directory}")
 def step(context, tabletype, directory):
     if not hasattr(context, "tables"):
@@ -30,3 +39,9 @@ def step(context):
         context.tables["virtuals"]
     )
     context.rules = generate_setup.generate_setup(tables)
+
+@then("these rules exist")
+def step(context):
+    for rule in context.text.strip().split("\n"):
+        if rule not in context.rules:
+            raise ValueError("Rule is missing: '%s'" % rule)
