@@ -24,6 +24,10 @@ Feature: Docker attachment.
         iptables  -t filter -I DOCKER-USER -j MFWFORWARD
         ip6tables -t filter -I FORWARD     -j MFWFORWARD
         """
+      And these rules do NOT exist
+        """
+        iptables  -t filter -I FORWARD -j MFWFORWARD
+        """
 
   Scenario: Docker zone does not exist
 
@@ -47,6 +51,10 @@ Feature: Docker attachment.
         """
         iptables  -t filter -I FORWARD -j MFWFORWARD
         ip6tables -t filter -I FORWARD -j MFWFORWARD
+        """
+      And these rules do NOT exist
+        """
+        iptables  -t filter -I DOCKER-USER -j MFWFORWARD
         """
 
   Scenario: Docker port forwarding
