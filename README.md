@@ -156,5 +156,5 @@ If Docker is not present on a system, all docker-related chains are skipped and 
 
 ## Egress path
 
-Outgoing packets are only routed through the `MWFPOSTROUTING` chain if they match an `accept+nat` rule, in which case they
-are masqueraded. In all other cases, outgoing packets are left alone.
+The only situation in which outgoing packets are touched is if they match an `accept+nat` rule, in which case they are
+routed through the `MFWPOSTROUTING` chain to be masqueraded. In all other cases, outgoing packets are left alone.
