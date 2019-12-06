@@ -155,7 +155,7 @@ Feature: Stuff where none of the more specific features matter.
       And rules table of
         """
         # Src-Zone      Dest-Zone        Src-Address          Dst-Address            Service        Action
-        ALL             FW               ALL                  ALL                    ssh            ACCEPT
+        ALL             FW               ALL                  ALL                    ssh            accept
         """
       And virtuals table is empty
      Then rule compilation raises a ValueError
