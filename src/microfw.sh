@@ -57,8 +57,8 @@ function generate_tear_down() {
     echo 'set -e'
     echo 'set -u'
 
-    echo 'iptables-save  | /usr/local/lib/microfw/generate_teardown.py "iptables"  | /bin/bash -eu'
-    echo 'ip6tables-save | /usr/local/lib/microfw/generate_teardown.py "ip6tables" | /bin/bash -eu'
+    echo 'iptables-save  | /usr/local/lib/microfw/generate_teardown.py "iptables"  | /bin/bash'
+    echo 'ip6tables-save | /usr/local/lib/microfw/generate_teardown.py "ip6tables" | /bin/bash'
 
     echo ipset flush
     echo ipset destroy
