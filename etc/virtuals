@@ -25,3 +25,4 @@
 # src-zone       ext-addr          int-addr       ext-service      int-service
 ext              lan_router_ext    lan_nas        https            https
 ext              lan_router_ext    DOCKER         http-alt         http
+ext              lan_router_ext    DOCKER         mumble           mumble
