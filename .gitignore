@@ -1,5 +1,6 @@
 nodes/
 ansible/hosts
+__pycache__
 
 rs/.idea/
 rs/rs.iml
