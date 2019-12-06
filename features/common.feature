@@ -31,6 +31,11 @@ Feature: Stuff where none of the more specific features matter.
         ipset create 'mumble_udp' bitmap:port range 1-65535
         ipset add    'mumble_udp' '64738'
 
+        iptables  -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
+        ip6tables -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
+        iptables  -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+        ip6tables -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+
         iptables  -N accept
         iptables  -A accept -j ACCEPT
         iptables  -N drop
@@ -51,15 +56,8 @@ Feature: Stuff where none of the more specific features matter.
         ip6tables -A reject -p tcp -j REJECT --reject-with tcp-reset
         ip6tables -A reject -j REJECT --reject-with icmp6-adm-prohibited
 
-        iptables  -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
-        ip6tables -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
-        iptables  -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-        ip6tables -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-
         iptables  -A MFWINPUT -i 'eth0' -p 'gre'  -j ACCEPT
         ip6tables -A MFWINPUT -i 'eth0' -p 'gre'  -j ACCEPT
-        iptables  -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
-        ip6tables -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
 
         iptables  -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
         ip6tables -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
@@ -69,6 +67,9 @@ Feature: Stuff where none of the more specific features matter.
         ip6tables -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
         iptables  -A MFWFORWARD -i 'eth1' -j 'int_fwd'
         ip6tables -A MFWFORWARD -i 'eth1' -j 'int_fwd'
+
+        iptables  -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
+        ip6tables -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
 
         iptables  -A 'ext_fwd' -o 'eth0' -j reject
         iptables  -A 'ext_fwd' -o 'eth1' -j reject

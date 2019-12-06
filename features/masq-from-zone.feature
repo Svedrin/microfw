@@ -30,16 +30,16 @@ Feature: Masq from a whole zone.
      Then the rules compile
       And these rules exist
         """
-        iptables  -t mangle -I FORWARD     -j MFWFORWARD
-        ip6tables -t mangle -I FORWARD     -j MFWFORWARD
-        iptables  -t nat    -I POSTROUTING -j MFWPOSTROUTING
-        ip6tables -t nat    -I POSTROUTING -j MFWPOSTROUTING
         iptables  -t mangle -A MFWFORWARD  -i 'eth1' -j 'int_fwd'
         ip6tables -t mangle -A MFWFORWARD  -i 'eth1' -j 'int_fwd'
         iptables  -t 'mangle' -A 'int_fwd'        -o 'eth0' -j MARK --set-mark 0x400
         iptables  -t 'nat'    -A 'MFWPOSTROUTING' -o 'eth0' -m mark --mark 0x400 -j MASQUERADE
         ip6tables -t 'mangle' -A 'int_fwd'        -o 'eth0' -j MARK --set-mark 0x401
         ip6tables -t 'nat'    -A 'MFWPOSTROUTING' -o 'eth0' -m mark --mark 0x401 -j MASQUERADE
+        iptables  -t nat    -I POSTROUTING -j MFWPOSTROUTING
+        ip6tables -t nat    -I POSTROUTING -j MFWPOSTROUTING
+        iptables  -t mangle -I FORWARD     -j MFWFORWARD
+        ip6tables -t mangle -I FORWARD     -j MFWFORWARD
         """
 
   Scenario: Masq from lan_home
@@ -64,10 +64,10 @@ Feature: Masq from a whole zone.
      Then the rules compile
       And these rules exist
         """
-        iptables  -t nat -I POSTROUTING -j MFWPOSTROUTING
-        ip6tables -t nat -I POSTROUTING -j MFWPOSTROUTING
         iptables  -t 'nat' -A 'MFWPOSTROUTING' -o 'eth0' -m set --match-set 'lan_home_v4' src -j MASQUERADE
         ip6tables -t 'nat' -A 'MFWPOSTROUTING' -o 'eth0' -m set --match-set 'lan_home_v6' src -j MASQUERADE
+        iptables  -t nat -I POSTROUTING -j MFWPOSTROUTING
+        ip6tables -t nat -I POSTROUTING -j MFWPOSTROUTING
         """
       And these rules do NOT exist
         """
