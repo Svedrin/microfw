@@ -69,3 +69,10 @@ Feature: Masq from a whole zone.
         iptables  -t 'nat' -A 'MFWPOSTROUTING' -o 'eth0' -m set --match-set 'lan_home_v4' src -j MASQUERADE
         ip6tables -t 'nat' -A 'MFWPOSTROUTING' -o 'eth0' -m set --match-set 'lan_home_v6' src -j MASQUERADE
         """
+      And these rules do NOT exist
+        """
+        iptables  -t mangle -I FORWARD     -j MFWFORWARD
+        ip6tables -t mangle -I FORWARD     -j MFWFORWARD
+        iptables  -t mangle -A MFWFORWARD  -i 'eth1' -j 'int_fwd'
+        ip6tables -t mangle -A MFWFORWARD  -i 'eth1' -j 'int_fwd'
+        """

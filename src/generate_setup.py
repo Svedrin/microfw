@@ -94,6 +94,13 @@ def generate_setup(tables):
     all_rules      = list(tables.rules)
     all_virtuals   = list(tables.virtuals)
 
+    # If we have an accept+nat rule that specifies ALL as the src address, we have to use mangle
+    use_mangle = bool([
+        rule
+        for rule in all_rules
+        if rule.action == "accept+nat" and rule.srcaddr == "ALL"
+    ])
+
     # Validate interfaces, rules and virtuals
 
     ensure_unique("interface", [interface.name for interface in all_interfaces])
@@ -251,12 +258,14 @@ def generate_setup(tables):
     printf("ip6tables -t filter -N MFWINPUT")
     printf("iptables  -t filter -N MFWFORWARD")
     printf("ip6tables -t filter -N MFWFORWARD")
-    printf("iptables  -t mangle -N MFWFORWARD")
-    printf("ip6tables -t mangle -N MFWFORWARD")
     printf("iptables  -t nat    -N MFWPREROUTING")
     printf("ip6tables -t nat    -N MFWPREROUTING")
     printf("iptables  -t nat    -N MFWPOSTROUTING")
     printf("ip6tables -t nat    -N MFWPOSTROUTING")
+
+    if use_mangle:
+        printf("iptables  -t mangle -N MFWFORWARD")
+        printf("ip6tables -t mangle -N MFWFORWARD")
 
     # Generate implicit accept rules for lo, icmp and related
 
@@ -303,8 +312,10 @@ def generate_setup(tables):
         printf("ip6tables -N '%s_inp'" % zone)
         printf("iptables  -N '%s_fwd'" % zone)
         printf("ip6tables -N '%s_fwd'" % zone)
-        printf("iptables  -t mangle -N '%s_fwd'" % zone)
-        printf("ip6tables -t mangle -N '%s_fwd'" % zone)
+
+        if use_mangle:
+            printf("iptables  -t mangle -N '%s_fwd'" % zone)
+            printf("ip6tables -t mangle -N '%s_fwd'" % zone)
 
     # Generate rules to route traffic from MFWINPUT and MFWFORWARD to those chains
 
@@ -326,8 +337,10 @@ def generate_setup(tables):
         # Route incoming traffic to zone-specific forward chains
         printf("iptables  -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
         printf("ip6tables -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
-        printf("iptables  -t mangle -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
-        printf("ip6tables -t mangle -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
+
+        if use_mangle:
+            printf("iptables  -t mangle -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
+            printf("ip6tables -t mangle -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
 
     # Generate rules to implement filtering
     mark_gen = itertools.count(0x400)
@@ -572,12 +585,14 @@ def generate_setup(tables):
     printf("ip6tables -t filter -I FORWARD     -j MFWFORWARD")
     printf("iptables  -t filter -I INPUT       -j MFWINPUT")
     printf("ip6tables -t filter -I INPUT       -j MFWINPUT")
-    printf("iptables  -t mangle -I FORWARD     -j MFWFORWARD")
-    printf("ip6tables -t mangle -I FORWARD     -j MFWFORWARD")
     printf("iptables  -t nat    -I PREROUTING  -j MFWPREROUTING")
     printf("ip6tables -t nat    -I PREROUTING  -j MFWPREROUTING")
     printf("iptables  -t nat    -I POSTROUTING -j MFWPOSTROUTING")
     printf("ip6tables -t nat    -I POSTROUTING -j MFWPOSTROUTING")
+
+    if use_mangle:
+        printf("iptables  -t mangle -I FORWARD     -j MFWFORWARD")
+        printf("ip6tables -t mangle -I FORWARD     -j MFWFORWARD")
 
     return output
 
