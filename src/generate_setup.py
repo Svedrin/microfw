@@ -214,16 +214,19 @@ def generate_setup():
 
     # Now let's generate a bash script.
 
-    print("#!/bin/bash")
-    print("set -e")
-    print("set -u")
-    print("")
+    def printf(fmt, obj=None):
+        """ Format a string using a namedtuple as args. """
+        if obj is None:
+            print(fmt)
+        else:
+            print(fmt % obj._asdict())
+
+    printf("#!/bin/bash")
+    printf("set -e")
+    printf("set -u")
+    printf("")
 
     # Generate ipsets for the entries we're going to use
-
-    def printf(fmt, obj):
-        """ Format a string using a namedtuple as args. """
-        print(fmt % obj._asdict())
 
     for address in sorted(used_addresses, key=lambda x: x.name):
         if address.v4 != '-':
@@ -241,74 +244,74 @@ def generate_setup():
             printf("ipset create '%(name)s_udp' bitmap:port range 1-65535", service)
             printf("ipset add    '%(name)s_udp' '%(udp)s'", service)
 
-    print("")
+    printf("")
 
-    print("iptables  -t filter -N MFWINPUT")
-    print("ip6tables -t filter -N MFWINPUT")
-    print("iptables  -t filter -N MFWFORWARD")
-    print("ip6tables -t filter -N MFWFORWARD")
-    print("iptables  -t mangle -N MFWFORWARD")
-    print("ip6tables -t mangle -N MFWFORWARD")
-    print("iptables  -t nat    -N MFWPREROUTING")
-    print("ip6tables -t nat    -N MFWPREROUTING")
-    print("iptables  -t nat    -N MFWPOSTROUTING")
-    print("ip6tables -t nat    -N MFWPOSTROUTING")
+    printf("iptables  -t filter -N MFWINPUT")
+    printf("ip6tables -t filter -N MFWINPUT")
+    printf("iptables  -t filter -N MFWFORWARD")
+    printf("ip6tables -t filter -N MFWFORWARD")
+    printf("iptables  -t mangle -N MFWFORWARD")
+    printf("ip6tables -t mangle -N MFWFORWARD")
+    printf("iptables  -t nat    -N MFWPREROUTING")
+    printf("ip6tables -t nat    -N MFWPREROUTING")
+    printf("iptables  -t nat    -N MFWPOSTROUTING")
+    printf("ip6tables -t nat    -N MFWPOSTROUTING")
 
     # Generate implicit accept rules for lo, icmp and related
 
-    print("iptables  -A MFWINPUT   -i lo   -j ACCEPT")
-    print("ip6tables -A MFWINPUT   -i lo   -j ACCEPT")
+    printf("iptables  -A MFWINPUT   -i lo   -j ACCEPT")
+    printf("ip6tables -A MFWINPUT   -i lo   -j ACCEPT")
 
-    print("iptables  -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
-    print("ip6tables -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    printf("iptables  -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    printf("ip6tables -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT")
 
-    print("iptables  -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
-    print("ip6tables -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    printf("iptables  -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
+    printf("ip6tables -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT")
 
     # Generate action chains
 
-    print("iptables  -N accept")
-    print("iptables  -A accept -j ACCEPT")
+    printf("iptables  -N accept")
+    printf("iptables  -A accept -j ACCEPT")
 
-    print("iptables  -N drop")
-    print("iptables  -A drop -j DROP")
+    printf("iptables  -N drop")
+    printf("iptables  -A drop -j DROP")
 
-    print("iptables  -N reject")
-    print("iptables  -A reject -m addrtype --src-type BROADCAST -j DROP")
-    print("iptables  -A reject -s 224.0.0.0/4 -j DROP")
-    print("iptables  -A reject -p igmp -j DROP")
-    print("iptables  -A reject -p tcp -j REJECT --reject-with tcp-reset")
-    print("iptables  -A reject -p udp -j REJECT --reject-with icmp-port-unreachable")
-    print("iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable")
-    print("iptables  -A reject -j REJECT --reject-with icmp-host-prohibited")
+    printf("iptables  -N reject")
+    printf("iptables  -A reject -m addrtype --src-type BROADCAST -j DROP")
+    printf("iptables  -A reject -s 224.0.0.0/4 -j DROP")
+    printf("iptables  -A reject -p igmp -j DROP")
+    printf("iptables  -A reject -p tcp -j REJECT --reject-with tcp-reset")
+    printf("iptables  -A reject -p udp -j REJECT --reject-with icmp-port-unreachable")
+    printf("iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable")
+    printf("iptables  -A reject -j REJECT --reject-with icmp-host-prohibited")
 
-    print("ip6tables -N accept")
-    print("ip6tables -A accept -j ACCEPT")
+    printf("ip6tables -N accept")
+    printf("ip6tables -A accept -j ACCEPT")
 
-    print("ip6tables -N drop")
-    print("ip6tables -A drop -j DROP")
+    printf("ip6tables -N drop")
+    printf("ip6tables -A drop -j DROP")
 
-    print("ip6tables -N reject")
-    print("ip6tables -A reject -p tcp -j REJECT --reject-with tcp-reset")
-    print("ip6tables -A reject -j REJECT --reject-with icmp6-adm-prohibited")
+    printf("ip6tables -N reject")
+    printf("ip6tables -A reject -p tcp -j REJECT --reject-with tcp-reset")
+    printf("ip6tables -A reject -j REJECT --reject-with icmp6-adm-prohibited")
 
     # Generate zone-specific chains
 
     for zone in sorted(all_zones):
-        print("iptables  -N '%s_inp'" % zone)
-        print("ip6tables -N '%s_inp'" % zone)
-        print("iptables  -N '%s_fwd'" % zone)
-        print("ip6tables -N '%s_fwd'" % zone)
-        print("iptables  -t mangle -N '%s_fwd'" % zone)
-        print("ip6tables -t mangle -N '%s_fwd'" % zone)
+        printf("iptables  -N '%s_inp'" % zone)
+        printf("ip6tables -N '%s_inp'" % zone)
+        printf("iptables  -N '%s_fwd'" % zone)
+        printf("ip6tables -N '%s_fwd'" % zone)
+        printf("iptables  -t mangle -N '%s_fwd'" % zone)
+        printf("ip6tables -t mangle -N '%s_fwd'" % zone)
 
     # Generate rules to route traffic from MFWINPUT and MFWFORWARD to those chains
 
     for interface in all_interfaces:
         if interface.protocols != "-":
             for proto in interface.protocols.split(","):
-                print("iptables  -A MFWINPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
-                print("ip6tables -A MFWINPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
+                printf("iptables  -A MFWINPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
+                printf("ip6tables -A MFWINPUT   -i '%s' -p '%s' -j ACCEPT" % (interface.name, proto))
 
         # Route incoming traffic to zone-specific input chains
         printf("iptables  -A MFWINPUT   -i '%(name)s' -j '%(zone)s_inp'", interface)
@@ -429,7 +432,7 @@ def generate_setup():
 
         # Now reduce() the pipeline to generate the actual commands.
         for command in reduce(chain_gen, pipeline):
-            print(command)
+            printf(command)
 
 
     # Generate rules to implement virtual services
@@ -538,43 +541,43 @@ def generate_setup():
 
         # Now reduce() the pipeline to generate the actual commands.
         for command in reduce(chain_gen, pipeline):
-            print(command)
+            printf(command)
 
     # Accept icmp by default, unless a previous rule explicitly rejected/dropped it
 
-    print("iptables  -A MFWINPUT   -p icmp -j ACCEPT")
-    print("iptables  -A MFWFORWARD -p icmp -j ACCEPT")
+    printf("iptables  -A MFWINPUT   -p icmp -j ACCEPT")
+    printf("iptables  -A MFWFORWARD -p icmp -j ACCEPT")
 
-    print("ip6tables -A MFWINPUT   -p icmpv6 -j ACCEPT")
-    print("ip6tables -A MFWFORWARD -p icmpv6 -j ACCEPT")
+    printf("ip6tables -A MFWINPUT   -p icmpv6 -j ACCEPT")
+    printf("ip6tables -A MFWFORWARD -p icmpv6 -j ACCEPT")
 
     # Generate last-resort reject rules
 
-    print("iptables  -A MFWINPUT   -j reject")
-    print("ip6tables -A MFWINPUT   -j reject")
-    print("iptables  -A MFWFORWARD -j reject")
-    print("ip6tables -A MFWFORWARD -j reject")
+    printf("iptables  -A MFWINPUT   -j reject")
+    printf("ip6tables -A MFWINPUT   -j reject")
+    printf("iptables  -A MFWFORWARD -j reject")
+    printf("ip6tables -A MFWFORWARD -j reject")
 
-    print("")
+    printf("")
 
     # Now determine where to plug into. If docker is present on this system
     # (as indicated by a DOCKER zone existing), plug into DOCKER-USER; otherwise
     # plug directly into FORWARD.
     # Since Docker completely ignores IPv6, attach to FORWARD there regardless.
     if "DOCKER" in all_zones:
-        print("iptables  -t filter -I DOCKER-USER -j MFWFORWARD")
+        printf("iptables  -t filter -I DOCKER-USER -j MFWFORWARD")
     else:
-        print("iptables  -t filter -I FORWARD     -j MFWFORWARD")
+        printf("iptables  -t filter -I FORWARD     -j MFWFORWARD")
 
-    print("ip6tables -t filter -I FORWARD     -j MFWFORWARD")
-    print("iptables  -t filter -I INPUT       -j MFWINPUT")
-    print("ip6tables -t filter -I INPUT       -j MFWINPUT")
-    print("iptables  -t mangle -I FORWARD     -j MFWFORWARD")
-    print("ip6tables -t mangle -I FORWARD     -j MFWFORWARD")
-    print("iptables  -t nat    -I PREROUTING  -j MFWPREROUTING")
-    print("ip6tables -t nat    -I PREROUTING  -j MFWPREROUTING")
-    print("iptables  -t nat    -I POSTROUTING -j MFWPOSTROUTING")
-    print("ip6tables -t nat    -I POSTROUTING -j MFWPOSTROUTING")
+    printf("ip6tables -t filter -I FORWARD     -j MFWFORWARD")
+    printf("iptables  -t filter -I INPUT       -j MFWINPUT")
+    printf("ip6tables -t filter -I INPUT       -j MFWINPUT")
+    printf("iptables  -t mangle -I FORWARD     -j MFWFORWARD")
+    printf("ip6tables -t mangle -I FORWARD     -j MFWFORWARD")
+    printf("iptables  -t nat    -I PREROUTING  -j MFWPREROUTING")
+    printf("ip6tables -t nat    -I PREROUTING  -j MFWPREROUTING")
+    printf("iptables  -t nat    -I POSTROUTING -j MFWPOSTROUTING")
+    printf("ip6tables -t nat    -I POSTROUTING -j MFWPOSTROUTING")
 
 
 if __name__ == '__main__':
