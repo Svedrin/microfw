@@ -21,6 +21,10 @@ if len(sys.argv) > 1:
 
 
 def read_table(filename):
+    table = open(os.path.join(ETC_DIR, filename), "r")
+    yield from parse_table(filename, table)
+
+def parse_table(filename, table):
     columns = {
         "addresses":  3,
         "services":   3,
@@ -40,7 +44,6 @@ def read_table(filename):
     if filename not in columns:
         raise RuntimeError("table %s does not exist" % filename)
 
-    table = open(os.path.join(ETC_DIR, filename), "r")
     for lineno, line in enumerate(table, start=1):
         if not line.strip() or line.startswith("#"):
             continue
