@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import re
 import os.path
 import sys
 
@@ -38,10 +39,16 @@ def step(context):
         context.tables["rules"],
         context.tables["virtuals"]
     )
-    context.rules = generate_setup.generate_setup(tables)
+    context.rules = [
+        # replace multiple spaces with a single space to have whitespace changes not matter
+        re.sub(' +', ' ', rule)
+        for rule in generate_setup.generate_setup(tables)
+    ]
 
 @then("these rules exist")
 def step(context):
     for rule in context.text.strip().split("\n"):
+        # replace multiple spaces with a single space to have whitespace changes not matter
+        rule = re.sub(' +', ' ', rule)
         if rule not in context.rules:
             raise ValueError("Rule is missing: '%s'" % rule)

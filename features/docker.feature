@@ -49,6 +49,6 @@ Feature: Docker attachment.
      Then the rules compile
       And these rules exist
         """
-        iptables  -t filter -I FORWARD     -j MFWFORWARD
-        ip6tables -t filter -I FORWARD     -j MFWFORWARD
+        iptables  -t filter -I FORWARD -j MFWFORWARD
+        ip6tables -t filter -I FORWARD -j MFWFORWARD
         """
