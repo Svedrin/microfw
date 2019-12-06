@@ -3,10 +3,10 @@ use std::num::ParseIntError;
 
 #[derive(Debug)]
 pub struct Service {
-    name:      String,
-    tcp:       Option<u16>,
-    udp:       Option<u16>,
-    lineno:    usize
+    pub name:      String,
+    pub tcp:       Option<u16>,
+    pub udp:       Option<u16>,
+    pub lineno:    usize
 }
 
 fn parse_port(portno: &str) -> Result<Option<u16>, ParseIntError> {

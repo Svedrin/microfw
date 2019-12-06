@@ -2,10 +2,10 @@ use crate::parse_result::ParseResult;
 
 #[derive(Debug)]
 pub struct Interface {
-    name:      String,
-    zone:      String,
-    protocols: Vec<String>,
-    lineno:    usize
+    pub name:      String,
+    pub zone:      String,
+    pub protocols: Vec<String>,
+    pub lineno:    usize
 }
 
 impl Interface {

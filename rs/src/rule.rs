@@ -69,13 +69,13 @@ impl From<&str> for RuleAction {
 
 #[derive(Debug)]
 pub struct Rule {
-    srczone: RuleZone,
-    dstzone: RuleZone,
-    srcaddr: RuleAddress,
-    dstaddr: RuleAddress,
-    service: RuleService,
-    action:  RuleAction,
-    lineno:  usize
+    pub srczone: RuleZone,
+    pub dstzone: RuleZone,
+    pub srcaddr: RuleAddress,
+    pub dstaddr: RuleAddress,
+    pub service: RuleService,
+    pub action:  RuleAction,
+    pub lineno:  usize
 }
 
 impl Rule {

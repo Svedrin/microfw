@@ -2,10 +2,10 @@ use crate::parse_result::ParseResult;
 
 #[derive(Debug)]
 pub struct Address {
-    name:   String,
-    v4:     String,
-    v6:     String,
-    lineno: usize
+    pub name:   String,
+    pub v4:     String,
+    pub v6:     String,
+    pub lineno: usize
 }
 
 impl Address {
