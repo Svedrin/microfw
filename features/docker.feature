@@ -17,7 +17,7 @@ Feature: Docker attachment.
         docker0            DOCKER      -
         """
       And rules table from etc
-      And virtuals table from etc
+      And virtuals table is empty
      Then the rules compile
       And these rules exist
         """
@@ -41,11 +41,7 @@ Feature: Docker attachment.
         gre0               int         ospf
         """
       And rules table from etc
-      And virtuals table of
-        """
-        # src-zone       ext-addr          int-addr       ext-service      int-service
-        ext              lan_router_ext    lan_nas        https            https
-        """
+      And virtuals table is empty
      Then the rules compile
       And these rules exist
         """

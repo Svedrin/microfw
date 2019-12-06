@@ -30,6 +30,15 @@ def step(context, tabletype, directory):
     generate_setup.ETC_DIR = os.path.join(BASE_DIR, directory)
     context.tables[tabletype] = generate_setup.read_table(tabletype)
 
+@given("{tabletype} table is empty")
+def step(context, tabletype):
+    if not hasattr(context, "tables"):
+        context.tables = {}
+    context.tables[tabletype] = generate_setup.parse_table(
+        filename = tabletype,
+        table    = StringIO("")
+    )
+
 @then("the rules compile")
 def step(context):
     tables = generate_setup.Tables(
