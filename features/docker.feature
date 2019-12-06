@@ -48,3 +48,19 @@ Feature: Docker attachment.
         iptables  -t filter -I FORWARD -j MFWFORWARD
         ip6tables -t filter -I FORWARD -j MFWFORWARD
         """
+
+  Scenario: Docker port forwarding
+
+    Expose a Docker service via the virtuals table.
+
+    Given addresses table from etc
+      And services table from etc
+      And interfaces table from etc
+      And rules table from etc
+      And virtuals table from etc
+     Then the rules compile
+      And these rules exist
+        """
+        iptables  -A 'MFWFORWARD' -i 'eth0' -o 'docker0' -p 'tcp' -m 'tcp' --dport '80' -j RETURN
+        ip6tables -A 'MFWFORWARD' -i 'eth0' -o 'docker0' -p 'tcp' -m 'tcp' --dport '80' -j RETURN
+        """

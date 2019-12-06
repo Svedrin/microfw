@@ -510,16 +510,15 @@ def generate_setup(tables):
                 # Docker. PREROUTING's gonna be handled by Docker, but Docker _also_ spawns a
                 # docker-proxy on the host, which is reachable through INPUT. Thus:
                 # * PREROUTING: Nothing to do, Docker handles that
-                # * FORWARD needs to allow traffic to intservice on Docker networks. We rely
-                #           on Docker routing traffic to the correct host here and simply
-                #           allow _all_ Docker interfaces to receive this traffic.
+                # * FORWARD needs to allow traffic to intservice on Docker networks. Docker
+                #   will create container-specific rules in the DOCKER chain, so we just RETURN.
                 # * INPUT needs to allow traffic to extservice (where docker-proxy listens).
                 for interface in all_interfaces:
                     if interface.zone == "DOCKER":
                         fmt_fltr = (
                             "%(cmd)s -A 'MFWFORWARD' -i '%(iface)s' -o '%(dstiface)s' "
                             "-p '%(proto)s' -m '%(proto)s' --dport '%(intservice)s' "
-                            "-j ACCEPT"
+                            "-j RETURN"
                         )
                         yield fmt_fltr % dict(cmd, dstiface=interface.name)
 
