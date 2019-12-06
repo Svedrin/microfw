@@ -4,6 +4,8 @@ Feature: Stuff where none of the more specific features matter.
 
     Let's validate that the example configuration from the etc directory actually
     parses, and that the address and service objects are unpacked into ipsets correctly.
+    Also validate the basics such as accept/drop/reject chains and RELATED,ESTABLISHED
+    rules and protocol-based rules.
 
     Given addresses table from etc
       And services table from etc
@@ -27,4 +29,34 @@ Feature: Stuff where none of the more specific features matter.
         ipset add    'mumble_tcp' '64738'
         ipset create 'mumble_udp' bitmap:port range 1-65535
         ipset add    'mumble_udp' '64738'
+
+        iptables  -N accept
+        iptables  -A accept -j ACCEPT
+        iptables  -N drop
+        iptables  -A drop -j DROP
+        iptables  -N reject
+        iptables  -A reject -m addrtype --src-type BROADCAST -j DROP
+        iptables  -A reject -s 224.0.0.0/4 -j DROP
+        iptables  -A reject -p igmp -j DROP
+        iptables  -A reject -p tcp -j REJECT --reject-with tcp-reset
+        iptables  -A reject -p udp -j REJECT --reject-with icmp-port-unreachable
+        iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
+        iptables  -A reject -j REJECT --reject-with icmp-host-prohibited
+        ip6tables -N accept
+        ip6tables -A accept -j ACCEPT
+        ip6tables -N drop
+        ip6tables -A drop -j DROP
+        ip6tables -N reject
+        ip6tables -A reject -p tcp -j REJECT --reject-with tcp-reset
+        ip6tables -A reject -j REJECT --reject-with icmp6-adm-prohibited
+
+        iptables  -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
+        ip6tables -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
+        iptables  -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+        ip6tables -A MFWFORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+        iptables  -A MFWINPUT -i 'eth0' -p 'gre'  -j ACCEPT
+        ip6tables -A MFWINPUT -i 'eth0' -p 'gre'  -j ACCEPT
+        iptables  -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
+        ip6tables -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
         """
