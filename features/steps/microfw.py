@@ -40,13 +40,13 @@ def step(context, tabletype):
         table    = StringIO("")
     )
 
-@given("iptables dump of")
-def step(context):
+@given("{iptables} dump of")
+def step(context, iptables):
     context.iptables_dump = StringIO(context.text)
     context.rules = [
         # replace multiple spaces with a single space to have whitespace changes not matter
         re.sub(' +', ' ', rule)
-        for rule in generate_teardown.generate_teardown(context.iptables_dump)
+        for rule in generate_teardown.generate_teardown(context.iptables_dump, iptables)
     ]
 
 @then("the rules compile")
