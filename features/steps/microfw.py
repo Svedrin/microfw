@@ -61,3 +61,11 @@ def step(context):
         rule = re.sub(' +', ' ', rule)
         if rule not in context.rules:
             raise ValueError("Rule is missing: '%s'" % rule)
+
+@then("these rules do NOT exist")
+def step(context):
+    for rule in context.text.strip().split("\n"):
+        # replace multiple spaces with a single space to have whitespace changes not matter
+        rule = re.sub(' +', ' ', rule)
+        if rule in context.rules:
+            raise ValueError("Rule should not exist: '%s'" % rule)
