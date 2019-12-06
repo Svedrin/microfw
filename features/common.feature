@@ -98,3 +98,90 @@ Feature: Stuff where none of the more specific features matter.
         ip6tables -A 'int_fwd' -o 'eth0' -m set --match-set 'lan_home_v4' src -m set --match-set 'google_v4' dst -p 'tcp' -m set --match-set 'http_tcp' dst -j accept
         iptables  -A 'int_fwd' -o 'eth0' -m set --match-set 'lan_home_v6' src -m set --match-set 'google_v6' dst -p 'tcp' -m set --match-set 'http_tcp' dst -j accept
         """
+
+  Scenario: Virtual with services set to ALL
+
+    Given addresses table from etc
+      And services table from etc
+      And interfaces table from etc
+      And rules table from etc
+      And virtuals table of
+        """
+        # src-zone       ext-addr          int-addr       ext-service      int-service
+        ext              lan_router_ext    lan_nas        ALL              ALL
+        """
+     Then the rules compile
+      And these rules exist
+        """
+        iptables  -t 'nat'    -A 'MFWPREROUTING' -i 'eth0' -d '123.123.123.123' -j DNAT --to-destination '192.168.0.1'
+        iptables  -t 'filter' -A 'MFWFORWARD'    -i 'eth0' -d '192.168.0.1'     -j ACCEPT
+        ip6tables -t 'nat'    -A 'MFWPREROUTING' -i 'eth0' -d '2a01::1'         -j DNAT --to-destination '2a01::1111:1111'
+        ip6tables -t 'filter' -A 'MFWFORWARD'    -i 'eth0' -d '2a01::1111:1111' -j ACCEPT
+        """
+
+  Scenario: Broken Config: Duplicate interface
+
+    Given addresses table from etc
+      And services table from etc
+      And interfaces table of
+        """
+        # Interface        Zone        Protocols
+        eth0               ext         gre
+        eth0               int         -
+        """
+      And rules table from etc
+      And virtuals table is empty
+     Then rule compilation raises a ValueError
+
+  Scenario: Broken Config: Missing column
+
+    Given addresses table from etc
+      And services table from etc
+      And interfaces table of
+        """
+        # Interface        Zone
+        eth0               ext
+        eth1               int
+        """
+      And rules table from etc
+      And virtuals table is empty
+     Then rule compilation raises a ValueError
+
+  Scenario: Broken Config: source zone cannot be ALL
+
+    Given addresses table from etc
+      And services table from etc
+      And interfaces table from etc
+      And rules table of
+        """
+        # Src-Zone      Dest-Zone        Src-Address          Dst-Address            Service        Action
+        ALL             FW               ALL                  ALL                    ssh            ACCEPT
+        """
+      And virtuals table is empty
+     Then rule compilation raises a ValueError
+
+  Scenario: Broken Config: Invalid action
+
+    Given addresses table from etc
+      And services table from etc
+      And interfaces table from etc
+      And rules table of
+        """
+        # Src-Zone      Dest-Zone        Src-Address          Dst-Address            Service        Action
+        ext             FW               ALL                  ALL                    ssh            ACCEPT
+        """
+      And virtuals table is empty
+     Then rule compilation raises a ValueError
+
+  Scenario: Broken Config: Virtual with only one service set to ALL
+
+    Given addresses table from etc
+      And services table from etc
+      And interfaces table from etc
+      And rules table from etc
+      And virtuals table of
+        """
+        # src-zone       ext-addr          int-addr       ext-service      int-service
+        ext              lan_router_ext    lan_nas        https            ALL
+        """
+     Then rule compilation raises a ValueError
