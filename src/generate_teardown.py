@@ -4,7 +4,7 @@ import sys
 
 from collections import defaultdict
 
-def generate_teardown(iptables_dump, iptables="iptables"):
+def generate_teardown(iptables_dump, iptables):
     output = []
     def printf(cmd):
         output.append("%s %s" % (iptables, cmd))
@@ -57,6 +57,10 @@ def generate_teardown(iptables_dump, iptables="iptables"):
             printf("-t filter -F %s" % chain)
             printf("-t filter -X %s" % chain)
 
+            if chain in chains_in_table["mangle"]:
+                printf("-t mangle -F %s" % chain)
+                printf("-t mangle -X %s" % chain)
+
     # Drop MFWPREROUTING, MFWINPUT and MFWFORWARD
     for chain in ("accept", "drop", "reject", "MFWINPUT", "MFWFORWARD"):
         printf("-t filter -X %s" % chain)
@@ -71,7 +75,11 @@ def generate_teardown(iptables_dump, iptables="iptables"):
 
 
 if __name__ == '__main__':
-    rules = generate_teardown(sys.stdin)
+    iptables = "iptables"
+    if sys.argv[1:]:
+        iptables = sys.argv[1]
+
+    rules = generate_teardown(sys.stdin, iptables)
 
     print("\n".join(rules) + "\n")
 

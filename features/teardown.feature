@@ -100,6 +100,8 @@ Feature: Intelligent tear-down.
         iptables  -t mangle -D FORWARD     -j MFWFORWARD
         iptables  -t mangle -F MFWFORWARD
         iptables  -t mangle -X MFWFORWARD
+        iptables  -t mangle -F ext_fwd
+        iptables  -t mangle -X ext_fwd
         """
 
   Scenario: Docker is absent, mangle chains are present.
@@ -200,10 +202,14 @@ Feature: Intelligent tear-down.
         iptables  -t filter -X ext_inp
         iptables  -t filter -F ext_fwd
         iptables  -t filter -X ext_fwd
+        iptables  -t mangle -F ext_fwd
+        iptables  -t mangle -X ext_fwd
         iptables  -t filter -F int_inp
         iptables  -t filter -X int_inp
         iptables  -t filter -F int_fwd
         iptables  -t filter -X int_fwd
+        iptables  -t mangle -F int_fwd
+        iptables  -t mangle -X int_fwd
 
         iptables  -t filter -X accept
         iptables  -t filter -X drop
@@ -218,6 +224,8 @@ Feature: Intelligent tear-down.
      Then these rules do NOT exist
         """
         iptables  -t filter -D DOCKER-USER -j MFWFORWARD
+        iptables  -t mangle -F ext_inp
+        iptables  -t mangle -X ext_inp
         """
 
   Scenario: Docker is present, mangle chains are absent.
@@ -333,6 +341,8 @@ Feature: Intelligent tear-down.
         iptables  -t mangle -D FORWARD     -j MFWFORWARD
         iptables  -t mangle -F MFWFORWARD
         iptables  -t mangle -X MFWFORWARD
+        iptables  -t mangle -F ext_fwd
+        iptables  -t mangle -X ext_fwd
         """
 
 
@@ -447,10 +457,14 @@ Feature: Intelligent tear-down.
         iptables  -t filter -X ext_inp
         iptables  -t filter -F ext_fwd
         iptables  -t filter -X ext_fwd
+        iptables  -t mangle -F ext_fwd
+        iptables  -t mangle -X ext_fwd
         iptables  -t filter -F int_inp
         iptables  -t filter -X int_inp
         iptables  -t filter -F int_fwd
         iptables  -t filter -X int_fwd
+        iptables  -t mangle -F int_fwd
+        iptables  -t mangle -X int_fwd
 
         iptables  -t filter -X accept
         iptables  -t filter -X drop
@@ -465,4 +479,6 @@ Feature: Intelligent tear-down.
      Then these rules do NOT exist
         """
         iptables  -t filter -D FORWARD -j MFWFORWARD
+        iptables  -t mangle -F ext_inp
+        iptables  -t mangle -X ext_inp
         """
