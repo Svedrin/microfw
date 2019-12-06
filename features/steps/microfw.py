@@ -10,6 +10,7 @@ from behave import given, when, then
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(os.path.join(BASE_DIR, "src"))
 import generate_setup
+import generate_teardown
 
 @given("{tabletype} table of")
 def step(context, tabletype):
@@ -38,6 +39,15 @@ def step(context, tabletype):
         filename = tabletype,
         table    = StringIO("")
     )
+
+@given("iptables dump of")
+def step(context):
+    context.iptables_dump = StringIO(context.text)
+    context.rules = [
+        # replace multiple spaces with a single space to have whitespace changes not matter
+        re.sub(' +', ' ', rule)
+        for rule in generate_teardown.generate_teardown(context.iptables_dump)
+    ]
 
 @then("the rules compile")
 def step(context):
