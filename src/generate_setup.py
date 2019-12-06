@@ -7,6 +7,7 @@ import itertools
 from functools   import reduce
 from collections import namedtuple
 
+Tables    = namedtuple("Tables",    ["addresses", "services", "interfaces", "rules", "virtuals"])
 Address   = namedtuple("Address",   ["name", "v4", "v6", "lineno"])
 Service   = namedtuple("Service",   ["name", "tcp", "udp", "lineno"])
 Interface = namedtuple("Interface", ["name", "zone", "protocols", "lineno"])
@@ -71,24 +72,24 @@ def chain_gen(cmd_gen, next_gen):
         yield from next_gen(cmd)
 
 
-def generate_setup():
+def generate_setup(tables):
     output = []
 
     # Parse tables
 
     all_addresses = {
         address.name: address
-        for address in read_table("addresses")
+        for address in tables.addresses
     }
     all_services = {
         service.name: service
-        for service in read_table("services")
+        for service in tables.services
     }
 
-    all_interfaces = list(read_table("interfaces"))
+    all_interfaces = list(tables.interfaces)
     all_zones      = set( iface.zone for iface in all_interfaces )
-    all_rules      = list(read_table("rules"))
-    all_virtuals   = list(read_table("virtuals"))
+    all_rules      = list(tables.rules)
+    all_virtuals   = list(tables.virtuals)
 
     # Validate interfaces, rules and virtuals
 
@@ -579,7 +580,15 @@ def generate_setup():
     return output
 
 if __name__ == '__main__':
-    rules = generate_setup()
+    tables = Tables(
+        read_table("addresses"),
+        read_table("services"),
+        read_table("interfaces"),
+        read_table("rules"),
+        read_table("virtuals")
+    )
+
+    rules = generate_setup(tables)
 
     print("#!/bin/bash")
     print("set -e")
