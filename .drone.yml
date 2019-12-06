@@ -1,0 +1,10 @@
+kind: pipeline
+name: default
+
+steps:
+- name: run tests
+  image: alpine:latest
+  commands:
+  - apk add --no-cache python3
+  - pip3 install --no-cache-dir behave
+  - python3 -m behave
