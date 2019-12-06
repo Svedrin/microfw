@@ -71,15 +71,8 @@ def chain_gen(cmd_gen, next_gen):
         yield from next_gen(cmd)
 
 
-def printf(fmt, obj):
-    """ Format a string using a namedtuple as args. """
-    print(fmt % obj._asdict())
-
-
 def generate_setup():
     # Parse tables
-
-    mark_gen = itertools.count(0x400)
 
     all_addresses = {
         address.name: address
@@ -228,6 +221,10 @@ def generate_setup():
 
     # Generate ipsets for the entries we're going to use
 
+    def printf(fmt, obj):
+        """ Format a string using a namedtuple as args. """
+        print(fmt % obj._asdict())
+
     for address in sorted(used_addresses, key=lambda x: x.name):
         if address.v4 != '-':
             printf("ipset create '%(name)s_v4' hash:net family inet  hashsize 1024 maxelem 65536", address)
@@ -329,6 +326,7 @@ def generate_setup():
         printf("ip6tables -t mangle -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
 
     # Generate rules to implement filtering
+    mark_gen = itertools.count(0x400)
 
     for rule in all_rules:
         # cmd is a dictionary that contains all the necessary building blocks for
