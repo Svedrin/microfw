@@ -11,5 +11,5 @@ def after_scenario(context, scenario):
 
     if scenario.compute_status() == "failed":
         with open("/tmp/iptables-rules.txt", "w") as fd:
-            fd.write("\n".join(context.rules))
+            fd.write("\n".join(context.rules) + "\n")
         print("rules written to /tmp/iptables-rules.txt")
