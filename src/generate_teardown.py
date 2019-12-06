@@ -27,9 +27,6 @@ def generate_teardown(iptables_dump, iptables="iptables"):
             # rule
             pass
 
-    print(chains_in_table)
-
-
     # Detach MFWPREROUTING, MFWINPUT and MFWFORWARD
     if "DOCKER-USER" in chains_in_table["filter"]:
         printf("-t filter -D DOCKER-USER -j MFWFORWARD")
@@ -76,9 +73,5 @@ def generate_teardown(iptables_dump, iptables="iptables"):
 if __name__ == '__main__':
     rules = generate_teardown(sys.stdin)
 
-    print("#!/bin/bash")
-    print("set -e")
-    print("set -u")
-    print("")
-    print("\n".join(rules))
+    print("\n".join(rules) + "\n")
 
