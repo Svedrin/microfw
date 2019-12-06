@@ -8,20 +8,6 @@
 # If int-addr is "DOCKER", then we'll rely on Docker creating the correct
 # routing rules itself, and only make sure we're not blocking related traffic.
 #
-#                     BIG PHAT DOCKER WARNING
-#
-# Relying on the "DOCKER" mechanism comes with a caveat. S'pose you have multiple
-# containers that each have their own port 80 exposed to different host ports, and
-# you expose one of them via this mechanism. This will also expose THE OTHER
-# CONTAINERS that have the same port open. This is because MicroFW doesn't know
-# the specific IP address of the container that Docker is going to route this traffic
-# to, so it exposes them all, and Docker doesn't care.
-#
-# If you don't want that to happen, you can either:
-# * move the container onto a network you created yourself, that is a standard zone,
-#   then create an Address object for it and expose it like any other service; or
-# * not expose it via the Firewall at all, but use a reverse proxy instead.
-#
 # src-zone       ext-addr          int-addr       ext-service      int-service
 ext              lan_router_ext    lan_nas        https            https
 ext              lan_router_ext    DOCKER         http-alt         http
