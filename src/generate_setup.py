@@ -72,6 +72,8 @@ def chain_gen(cmd_gen, next_gen):
 
 
 def generate_setup():
+    output = []
+
     # Parse tables
 
     all_addresses = {
@@ -217,14 +219,9 @@ def generate_setup():
     def printf(fmt, obj=None):
         """ Format a string using a namedtuple as args. """
         if obj is None:
-            print(fmt)
+            output.append(fmt)
         else:
-            print(fmt % obj._asdict())
-
-    printf("#!/bin/bash")
-    printf("set -e")
-    printf("set -u")
-    printf("")
+            output.append(fmt % obj._asdict())
 
     # Generate ipsets for the entries we're going to use
 
@@ -579,6 +576,13 @@ def generate_setup():
     printf("iptables  -t nat    -I POSTROUTING -j MFWPOSTROUTING")
     printf("ip6tables -t nat    -I POSTROUTING -j MFWPOSTROUTING")
 
+    return output
 
 if __name__ == '__main__':
-    generate_setup()
+    rules = generate_setup()
+
+    print("#!/bin/bash")
+    print("set -e")
+    print("set -u")
+    print("")
+    print("\n".join(rules))
