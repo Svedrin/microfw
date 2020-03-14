@@ -72,6 +72,7 @@ function tear_down() {
 
     # Now let's actually shut down the firewall
     # Detach our input chains from the main iptables chains
+    ip+6tables -t filter -D INPUT       -j MFWINPUT
     if [ "$HAVE_DOCKER" = "true" ]; then
         iptables   -t filter -D DOCKER-USER -j MFWFORWARD
         ip6tables  -t filter -D FORWARD     -j MFWFORWARD
@@ -105,7 +106,6 @@ function tear_down() {
             ip+6tables -t mangle -F "${zone}_fwd"
             ip+6tables -t mangle -X "${zone}_fwd"
         fi
-        ;;
     done
 
     # The chains that we flushed above, now we drop
