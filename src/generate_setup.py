@@ -234,6 +234,10 @@ def generate_setup(tables):
         else:
             output.append(fmt % obj._asdict())
 
+    def state(fmt, obj=None):
+        """ generate a command to echo something into the state file """
+        printf('echo "%s" >> /var/lib/microfw/state.txt ' % fmt, obj)
+
     # Generate ipsets for the entries we're going to use
 
     for address in sorted(used_addresses, key=lambda x: x.name):
@@ -253,6 +257,9 @@ def generate_setup(tables):
             printf("ipset add    '%(name)s_udp' '%(udp)s'", service)
 
     printf("")
+    printf("rm -f /var/lib/microfw/state.txt")
+    printf("touch /var/lib/microfw/state.txt")
+    printf("chmod 600 /var/lib/microfw/state.txt")
 
     printf("iptables  -t filter -N MFWINPUT")
     printf("ip6tables -t filter -N MFWINPUT")
@@ -263,9 +270,13 @@ def generate_setup(tables):
     printf("iptables  -t nat    -N MFWPOSTROUTING")
     printf("ip6tables -t nat    -N MFWPOSTROUTING")
 
+    if "DOCKER" in all_zones:
+        state("HAVE-DOCKER")
+
     if use_mangle:
         printf("iptables  -t mangle -N MFWFORWARD")
         printf("ip6tables -t mangle -N MFWFORWARD")
+        state("HAVE-MANGLE")
 
     # Generate implicit accept rules for lo, icmp and related
 
@@ -312,6 +323,7 @@ def generate_setup(tables):
         printf("ip6tables -N '%s_inp'" % zone)
         printf("iptables  -N '%s_fwd'" % zone)
         printf("ip6tables -N '%s_fwd'" % zone)
+        state("ZONE %s" % zone)
 
         if use_mangle:
             printf("iptables  -t mangle -N '%s_fwd'" % zone)
