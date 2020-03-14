@@ -29,13 +29,6 @@
       owner: root
       group: root
       mode: 0755
-  - name: Copy generate_teardown.py
-    copy:
-      src:  ../src/generate_teardown.py
-      dest: /usr/local/lib/microfw/generate_teardown.py
-      owner: root
-      group: root
-      mode: 0755
   - name: mkdir /etc/microfw
     file: path=/etc/microfw/ state=directory
   - name: Copy addresses
