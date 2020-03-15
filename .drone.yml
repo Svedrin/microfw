@@ -9,8 +9,9 @@ steps:
   - apk add --no-cache python3
   - pip3 install --no-cache-dir behave
   - python3 -m behave
+  - ./features/teardown.sh
 ---
 kind: signature
-hmac: 590c0f28445db0ca9225cac9b3b9a8895be81e7f92c267afbcfada5b22d65041
+hmac: b588e56b5b3f63aaf9d8c9b61d7d4194b1d002210d3e9816d3d384936492cd57
 
 ...
