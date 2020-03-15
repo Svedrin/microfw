@@ -59,7 +59,6 @@ function test_no_state() {
     [ ! -e "$TEMPDIR/out.txt" ]
 }
 
-run_test test_no_state
 
 # Scenario: No Docker, no mangle, just tear down a few zones.
 function test_simple() {
@@ -74,7 +73,6 @@ function test_simple() {
     grep -v -q mangle "$TEMPDIR/out.txt"
 }
 
-run_test test_simple
 
 # Scenario: Let's add some Docker to the mix
 function test_with_docker() {
@@ -90,7 +88,6 @@ function test_with_docker() {
     grep -v -q mangle "$TEMPDIR/out.txt"
 }
 
-run_test test_with_docker
 
 # Scenario: Now let's try with mangle, but without Docker
 function test_with_mangle() {
@@ -107,7 +104,6 @@ function test_with_mangle() {
     grep -q "iptables  -t mangle -F asdf_fwd" "$TEMPDIR/out.txt"
 }
 
-run_test test_with_mangle
 
 # Scenario: Now let's try with mangle _and_ Docker
 function test_with_docker_and_mangle() {
@@ -125,4 +121,11 @@ function test_with_docker_and_mangle() {
     grep -q "iptables  -t mangle -F asdf_fwd" "$TEMPDIR/out.txt"
 }
 
+
+# Now run tests and see what happens
+
+run_test test_no_state
+run_test test_simple
+run_test test_with_docker
+run_test test_with_mangle
 run_test test_with_docker_and_mangle
