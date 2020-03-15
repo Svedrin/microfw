@@ -6,12 +6,12 @@ steps:
 - name: run tests
   image: alpine:latest
   commands:
-  - apk add --no-cache python3
+  - apk add --no-cache bash python3
   - pip3 install --no-cache-dir behave
   - python3 -m behave
   - ./features/teardown.sh
 ---
 kind: signature
-hmac: b588e56b5b3f63aaf9d8c9b61d7d4194b1d002210d3e9816d3d384936492cd57
+hmac: 148cf11f80bcaa4cd311e0ccdf1babb55977761328d0763fbf4957c8873698d2
 
 ...
