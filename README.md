@@ -78,6 +78,8 @@ You can either set things up manually, or use the Ansible playbook provided in t
 If you choose to install manually:
 
 * `apt-get install ipset iptables`
+* Copy `src/generate_setup.py` to `/usr/local/lib/microfw`
+* Copy `src/microfw.py` to `/usr/local/sbin/microfw`
 * Copy `etc/microfw.service` to `/etc/systemd/system/`
 * Copy `addresses`, `services`, `interfaces`, `rules` and `virtuals` from the `etc` folder to `/etc/microfw` and edit them to your needs
 * `mkdir /var/lib/microfw`
