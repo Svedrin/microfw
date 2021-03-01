@@ -58,13 +58,17 @@ Feature: Stuff where none of the more specific features matter.
 
         iptables  -A MFWINPUT   -i 'eth0' -p 'gre'  -j ACCEPT
         ip6tables -A MFWINPUT   -i 'eth0' -p 'gre'  -j ACCEPT
-        iptables  -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
-        ip6tables -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
+        if [ ! -e "/sys/class/net/eth0/bridge/" ]; then
+          iptables  -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
+          ip6tables -A MFWFORWARD -i 'eth0' -o 'eth0' -j drop
+        fi
         iptables  -A MFWFORWARD -i 'eth0' -j 'ext_fwd'
         ip6tables -A MFWFORWARD -i 'eth0' -j 'ext_fwd'
 
-        iptables  -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
-        ip6tables -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
+        if [ ! -e "/sys/class/net/eth1/bridge/" ]; then
+          iptables  -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
+          ip6tables -A MFWFORWARD -i 'eth1' -o 'eth1' -j drop
+        fi
         iptables  -A MFWFORWARD -i 'eth1' -j 'int_fwd'
         ip6tables -A MFWFORWARD -i 'eth1' -j 'int_fwd'
 
