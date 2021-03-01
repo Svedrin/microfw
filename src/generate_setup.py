@@ -342,9 +342,12 @@ def generate_setup(tables):
         printf("ip6tables -A MFWINPUT   -i '%(name)s' -j '%(zone)s_inp'", interface)
 
         # We will never allow hairpin traffic though (traffic cannot be
-        # forwarded out the same interface where it came in)
-        printf("iptables  -A MFWFORWARD -i '%(name)s' -o '%(name)s' -j drop", interface)
-        printf("ip6tables -A MFWFORWARD -i '%(name)s' -o '%(name)s' -j drop", interface)
+        # forwarded out the same interface where it came in), unless that
+        # interface is a bridge
+        printf('if [ ! -e "/sys/class/net/%(name)s/bridge/" ]; then', interface)
+        printf("  iptables  -A MFWFORWARD -i '%(name)s' -o '%(name)s' -j drop", interface)
+        printf("  ip6tables -A MFWFORWARD -i '%(name)s' -o '%(name)s' -j drop", interface)
+        printf("fi")
 
         # Route incoming traffic to zone-specific forward chains
         printf("iptables  -A MFWFORWARD -i '%(name)s' -j '%(zone)s_fwd'", interface)
