@@ -127,11 +127,7 @@ function tear_down() {
 }
 
 function generate_setup() {
-    if [ -e "/usr/local/lib/microfw/generate_setup.py" ]; then
-        /usr/local/lib/microfw/generate_setup.py "$ETC_DIR"
-    else
-        src/generate_setup.py "$ETC_DIR"
-    fi
+        /usr/local/lib/microfw "$ETC_DIR"
 }
 
 function compile() {
