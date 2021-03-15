@@ -127,7 +127,7 @@ function tear_down() {
 }
 
 function generate_setup() {
-        /usr/local/lib/microfw "$ETC_DIR"
+        /usr/local/lib/microfw/generate_setup.py "$ETC_DIR"
 }
 
 function compile() {
