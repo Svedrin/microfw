@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStartPre=/var/lib/microfw/tear_down.sh
+ExecStartPre=/usr/local/sbin/microfw tear_down
 ExecStart=/var/lib/microfw/setup.sh
 RemainAfterExit=true
-ExecStop=/var/lib/microfw/tear_down.sh
+ExecStop=/usr/local/sbin/microfw tear_down
 StandardOutput=journal
 
 [Install]
