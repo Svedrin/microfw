@@ -1,11 +1,10 @@
 [Unit]
 Description=MicroFW
-After=network.target
+After=network.target docker.service
 OnFailure=microfw-on-failure.service
 
 [Service]
 Type=oneshot
-ExecStartPre=/usr/bin/sleep 30
 ExecStart=/usr/local/sbin/microfw apply_bootup
 RemainAfterExit=true
 ExecStop=/usr/local/sbin/microfw tear_down
