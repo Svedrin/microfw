@@ -5,6 +5,7 @@ OnFailure=microfw-on-failure.service
 
 [Service]
 Type=oneshot
+ExecStartPre=/usr/bin/sleep 30
 ExecStart=/usr/local/sbin/microfw apply_bootup
 RemainAfterExit=true
 ExecStop=/usr/local/sbin/microfw tear_down
