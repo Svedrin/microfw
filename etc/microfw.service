@@ -1,6 +1,6 @@
 [Unit]
 Description=MicroFW
-After=network.target
+After=network.target docker.service
 
 [Service]
 Type=oneshot
