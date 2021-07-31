@@ -2,13 +2,16 @@
 - hosts: all
   remote_user: root
   tasks:
-  - name: Install iptables
-    apt: name=iptables
-  - name: Install ipset
-    apt: name=ipset
   - name: Copy systemd service
     copy:
       src:  ../etc/microfw.service
+      dest: /etc/systemd/system/
+      owner: root
+      group: root
+      mode: 0644
+  - name: Copy systemd service on failure
+    copy:
+      src:  ../etc/microfw-on-failure.service
       dest: /etc/systemd/system/
       owner: root
       group: root

@@ -1,14 +1,15 @@
 [Unit]
 Description=MicroFW
 After=network.target
+OnFailure=microfw-on-failure.service
 
 [Service]
 Type=oneshot
-ExecStartPre=/usr/local/sbin/microfw tear_down
-ExecStart=/var/lib/microfw/setup.sh
+ExecStart=/usr/local/sbin/microfw apply_bootup
 RemainAfterExit=true
 ExecStop=/usr/local/sbin/microfw tear_down
 StandardOutput=journal
 
 [Install]
 WantedBy=multi-user.target
+

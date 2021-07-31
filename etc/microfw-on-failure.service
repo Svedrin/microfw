@@ -1,0 +1,10 @@
+[Unit]
+Description=MicroFW failure state
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl stop keepalived
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
