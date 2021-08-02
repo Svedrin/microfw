@@ -22,8 +22,8 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
                 echo " show          Generate and show setup.sh, but do not write it to disk"
                 echo " compile       Update tear_down.sh and setup.sh"
                 echo " apply         compile, run setup, prompt for aliveness, run teardown on timeout"
-                echo " apply_bootup   compile, run setup "
-		echo "                Note: Be sure you have applied the last changes, otherwise they will be active after a reboot. "
+                echo " apply_bootup  compile, run setup "
+                echo "               Note: Be sure you have applied the last changes, otherwise they will be active after a reboot. "
                 echo " tear_down     tear down any existing rules"
                 exit 0
                 ;;
