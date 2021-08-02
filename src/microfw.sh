@@ -59,6 +59,11 @@ function tear_down() {
         return
     fi
 
+    # We're not sure which state we're actually in, so we need to accept
+    # that any one of our iptables commands can fail because the things
+    # they're trying to uninstall have already been removed.
+    set +e
+
     # First let's find out if docker and mangle are present
     HAVE_DOCKER="$(grep -q "^HAVE-DOCKER$" "$VAR_DIR/state.txt" && echo "true" || echo "false")"
     HAVE_MANGLE="$(grep -q "^HAVE-MANGLE$" "$VAR_DIR/state.txt" && echo "true" || echo "false")"
@@ -124,6 +129,7 @@ function tear_down() {
     ipset destroy
 
     rm "$VAR_DIR/state.txt"
+    set -e
 }
 
 function generate_setup() {
