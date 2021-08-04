@@ -8,6 +8,7 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
     COMMAND="invalid"
     ETC_DIR="/etc/microfw"
     VAR_DIR="/var/lib/microfw"
+    SHM_DIR="/dev/shm/microfw"
 
     while [ -n "${1:-}" ]; do
         case "$1" in
@@ -59,7 +60,7 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
 fi
 
 function tear_down() {
-    if [ ! -e "$VAR_DIR/state.txt" ]; then
+    if [ ! -e "$SHM_DIR/state.txt" ]; then
         # Already torn down -> nothing to do
         return
     fi
@@ -70,8 +71,8 @@ function tear_down() {
     set +e
 
     # First let's find out if docker and mangle are present
-    HAVE_DOCKER="$(grep -q "^HAVE-DOCKER$" "$VAR_DIR/state.txt" && echo "true" || echo "false")"
-    HAVE_MANGLE="$(grep -q "^HAVE-MANGLE$" "$VAR_DIR/state.txt" && echo "true" || echo "false")"
+    HAVE_DOCKER="$(grep -q "^HAVE-DOCKER$" "$SHM_DIR/state.txt" && echo "true" || echo "false")"
+    HAVE_MANGLE="$(grep -q "^HAVE-MANGLE$" "$SHM_DIR/state.txt" && echo "true" || echo "false")"
 
     # Little helper function that makes it easier to run the same command for
     # both iptables and ip6tables
@@ -107,7 +108,7 @@ function tear_down() {
     done
 
     # Flush and drop zone-specific chains
-    grep "^ZONE " "$VAR_DIR/state.txt" | while read command zone; do
+    grep "^ZONE " "$SHM_DIR/state.txt" | while read command zone; do
         ip+6tables -t filter -F "${zone}_inp"
         ip+6tables -t filter -X "${zone}_inp"
         ip+6tables -t filter -F "${zone}_fwd"
@@ -133,7 +134,7 @@ function tear_down() {
     ipset flush
     ipset destroy
 
-    rm "$VAR_DIR/state.txt"
+    rm "$SHM_DIR/state.txt"
     set -e
 }
 
@@ -147,6 +148,7 @@ function generate_setup() {
 
 function compile() {
     mkdir -p $VAR_DIR
+    mkdir -p $SHM_DIR
     generate_setup     > $VAR_DIR/setup.sh
     chmod +x $VAR_DIR/setup.sh
 }
@@ -168,7 +170,6 @@ function apply() {
 
 function apply_bootup() {
 
-    rm -f $VAR_DIR/state.txt
     rm -f $VAR_DIR/setup.sh
 
     compile

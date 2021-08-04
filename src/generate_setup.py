@@ -15,6 +15,7 @@ Rule      = namedtuple("Rule",      ["srczone", "dstzone", "srcaddr", "dstaddr",
 Virtual   = namedtuple("Virtual",   ["srczone", "extaddr", "intaddr", "extservice", "intservice", "lineno"])
 
 ETC_DIR = "/etc/microfw"
+SHM_DIR = "/dev/shm/microfw"
 
 if len(sys.argv) > 1:
     ETC_DIR = sys.argv[1]
@@ -236,7 +237,7 @@ def generate_setup(tables):
 
     def state(fmt, obj=None):
         """ generate a command to echo something into the state file """
-        printf('echo "%s" >> /var/lib/microfw/state.txt ' % fmt, obj)
+        printf('echo "%s" >> "%s"/state.txt ' % (fmt, SHM_DIR), obj)
 
     # Generate ipsets for the entries we're going to use
 
@@ -257,9 +258,9 @@ def generate_setup(tables):
             printf("ipset add    '%(name)s_udp' '%(udp)s'", service)
 
     printf("")
-    printf("rm -f /var/lib/microfw/state.txt")
-    printf("touch /var/lib/microfw/state.txt")
-    printf("chmod 600 /var/lib/microfw/state.txt")
+    printf("rm -f %s/state.txt" % SHM_DIR)
+    printf("touch %s/state.txt" % SHM_DIR)
+    printf("chmod 600 %s/state.txt" % SHM_DIR)
 
     printf("iptables  -t filter -N MFWINPUT")
     printf("ip6tables -t filter -N MFWINPUT")
