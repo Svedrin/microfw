@@ -34,6 +34,7 @@ function ip6tables () {
 
 RUNNING_IN_CI=true
 VAR_DIR="$TEMPDIR/var"
+SHM_DIR="$TEMPDIR/var"
 ETC_DIR="$TEMPDIR/etc"
 source src/microfw.sh
 
