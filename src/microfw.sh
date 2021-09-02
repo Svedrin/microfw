@@ -60,7 +60,7 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
 fi
 
 function tear_down() {
-    if [ ! -e "$SHM_DIR/state.txt" ]; then
+    if [ ! -e "$RUN_DIR/state.txt" ]; then
         # Already torn down -> nothing to do
         return
     fi
