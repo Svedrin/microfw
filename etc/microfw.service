@@ -4,8 +4,7 @@ After=network.target docker.service
 
 [Service]
 Type=oneshot
-ExecStartPre=/usr/local/sbin/microfw tear_down
-ExecStart=/var/lib/microfw/setup.sh
+ExecStart=/usr/local/sbin/microfw apply_bootup
 RemainAfterExit=true
 ExecStop=/usr/local/sbin/microfw tear_down
 StandardOutput=journal
