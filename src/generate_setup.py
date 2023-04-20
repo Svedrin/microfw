@@ -242,19 +242,31 @@ def generate_setup(tables):
 
     for address in sorted(used_addresses, key=lambda x: x.name):
         if address.v4 != '-':
-            printf("ipset create '%(name)s_v4' hash:net family inet  hashsize 1024 maxelem 65536", address)
-            printf("ipset add    '%(name)s_v4' '%(v4)s'", address)
+            printf("if ipset create '%(name)s_v4' hash:net family inet  hashsize 1024 maxelem 65536; then", address)
+            printf("  ipset add    '%(name)s_v4' '%(v4)s'", address)
+            printf("else")
+            printf("  echo IPset %(name)s_v4 exists", address)
+            printf("fi")
         if address.v6 != '-':
-            printf("ipset create '%(name)s_v6' hash:net family inet6 hashsize 1024 maxelem 65536", address)
-            printf("ipset add    '%(name)s_v6' '%(v6)s'", address)
+            printf("if ipset create '%(name)s_v6' hash:net family inet6 hashsize 1024 maxelem 65536; then", address)
+            printf("  ipset add    '%(name)s_v6' '%(v6)s'", address)
+            printf("else")
+            printf("  echo IPset %(name)s_v6 exists", address)
+            printf("fi")
 
     for service in sorted(used_services, key=lambda x: x.name):
         if service.tcp != '-':
-            printf("ipset create '%(name)s_tcp' bitmap:port range 1-65535", service)
-            printf("ipset add    '%(name)s_tcp' '%(tcp)s'", service)
+            printf("if ipset create '%(name)s_tcp' bitmap:port range 1-65535; then", service)
+            printf("  ipset add    '%(name)s_tcp' '%(tcp)s'", service)
+            printf("else")
+            printf("  echo IPset %(name)s_tcp exists", address)
+            printf("fi")
         if service.udp != '-':
-            printf("ipset create '%(name)s_udp' bitmap:port range 1-65535", service)
-            printf("ipset add    '%(name)s_udp' '%(udp)s'", service)
+            printf("if ipset create '%(name)s_udp' bitmap:port range 1-65535; then", service)
+            printf("  ipset add    '%(name)s_udp' '%(udp)s'", service)
+            printf("else")
+            printf("  echo IPset %(name)s_udp exists", address)
+            printf("fi")
 
     printf("")
     printf("rm -f /var/lib/microfw/state.txt")
