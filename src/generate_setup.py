@@ -626,7 +626,7 @@ if __name__ == '__main__':
     rules = generate_setup(tables)
 
     print("#!/bin/bash")
-    print("set -e")
+    print("set +e")
     print("set -u")
     print("")
     print("\n".join(rules))
