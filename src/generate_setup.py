@@ -258,9 +258,11 @@ def generate_setup(tables):
             printf("ipset add    '%(name)s_udp' '%(udp)s'", service)
 
     printf("")
+    printf("mkdir -p %s"        % RUN_DIR)
     printf("rm -f %s/state.txt" % RUN_DIR)
     printf("touch %s/state.txt" % RUN_DIR)
     printf("chmod 600 %s/state.txt" % RUN_DIR)
+    printf("")
 
     printf("iptables  -t filter -N MFWINPUT")
     printf("ip6tables -t filter -N MFWINPUT")
