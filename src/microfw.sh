@@ -8,6 +8,7 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
     COMMAND="invalid"
     ETC_DIR="/etc/microfw"
     VAR_DIR="/var/lib/microfw"
+    RUN_DIR="/run/microfw"
 
     while [ -n "${1:-}" ]; do
         case "$1" in
