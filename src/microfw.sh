@@ -167,6 +167,7 @@ function apply() {
            [ -n "$(find $VAR_DIR/dbip-country-lite.csv -cmin +60)" ] || \
            [ -z "$(find /usr/share/xt_geoip/ -mindepth 1)" ]
         then
+            echo "Refreshing GeoIP database, this can take a while."
             cd $VAR_DIR
             /usr/libexec/xtables-addons/xt_geoip_dl
             /usr/libexec/xtables-addons/xt_geoip_build -D /usr/share/xt_geoip/ dbip-country-lite.csv
