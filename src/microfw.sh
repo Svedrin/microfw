@@ -34,7 +34,7 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
 
             -n|--node)
                 ETC_DIR="nodes/$2"
-                VAR_DIR=$ETC_DIR
+                VAR_DIR="$ETC_DIR"
                 if [ ! -d "$ETC_DIR" ]; then
                     echo >&2 "$ETC_DIR does not exist"
                     exit 2
@@ -60,7 +60,7 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
 fi
 
 function tear_down() {
-    if [ ! -e "$RUN_DIR/state.txt" ]; then
+    if [ ! -e "$SHM_DIR/state.txt" ]; then
         # Already torn down -> nothing to do
         return
     fi
@@ -71,8 +71,8 @@ function tear_down() {
     set +e
 
     # First let's find out if docker and mangle are present
-    HAVE_DOCKER="$(grep -q "^HAVE-DOCKER$" "$RUN_DIR/state.txt" && echo "true" || echo "false")"
-    HAVE_MANGLE="$(grep -q "^HAVE-MANGLE$" "$RUN_DIR/state.txt" && echo "true" || echo "false")"
+    HAVE_DOCKER="$(grep -q "^HAVE-DOCKER$" "$SHM_DIR/state.txt" && echo "true" || echo "false")"
+    HAVE_MANGLE="$(grep -q "^HAVE-MANGLE$" "$SHM_DIR/state.txt" && echo "true" || echo "false")"
 
     # Little helper function that makes it easier to run the same command for
     # both iptables and ip6tables
@@ -108,7 +108,7 @@ function tear_down() {
     done
 
     # Flush and drop zone-specific chains
-    grep "^ZONE " "$RUN_DIR/state.txt" | while read command zone; do
+    grep "^ZONE " "$SHM_DIR/state.txt" | while read command zone; do
         ip+6tables -t filter -F "${zone}_inp"
         ip+6tables -t filter -X "${zone}_inp"
         ip+6tables -t filter -F "${zone}_fwd"
@@ -134,7 +134,7 @@ function tear_down() {
     ipset flush
     ipset destroy
 
-    rm "$RUN_DIR/state.txt"
+    rm "$SHM_DIR/state.txt"
     set -e
 }
 
