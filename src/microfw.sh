@@ -154,6 +154,24 @@ function compile() {
 function apply() {
     compile
 
+    # Do we need geoip?
+    if grep -q -e '-m geoip' $VAR_DIR/setup.sh; then
+        if [ ! -e /usr/libexec/xtables-addons/xt_geoip_dl ]; then
+            echo >&2 "GeoIP modules are missing, cannot apply rules! To fix this, run:"
+            echo >&2 "    apt install xtables-addons-common libtext-csv-xs-perl"
+            exit 1
+        fi
+        # Check if we have an outdated index (older than 15min) or none at all
+        if [ ! -e $VAR_DIR/dbip-country-lite.csv ] || \
+           [ -n "$(find $VAR_DIR/dbip-country-lite.csv -cmin +15)" ] || \
+           [ -z "$(find /usr/share/xt_geoip/ -mindepth 1)" ]
+        then
+            cd $VAR_DIR
+            /usr/libexec/xtables-addons/xt_geoip_dl
+            /usr/libexec/xtables-addons/xt_geoip_build -D /usr/share/xt_geoip/ dbip-country-lite.csv
+        fi
+    fi
+
     tear_down
     $VAR_DIR/setup.sh
 

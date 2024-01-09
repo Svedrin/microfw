@@ -135,7 +135,7 @@ def generate_setup(tables):
                     rule.lineno, rule.dstzone
                 )
             )
-        if rule.srcaddr != "ALL":
+        if rule.srcaddr != "ALL" and not rule.srcaddr.startswith("GEO:"):
             if rule.srcaddr not in all_addresses:
                 raise ValueError(
                     "rules:%d: Source Address '%s' does not exist" % (
@@ -209,7 +209,8 @@ def generate_setup(tables):
     # For address and service tables, figure out which entries are actually _used_
 
     used_addresses = set(
-        all_addresses[rule.srcaddr]    for rule    in all_rules    if rule.srcaddr != "ALL"
+        all_addresses[rule.srcaddr]    for rule    in all_rules    if rule.srcaddr != "ALL" and
+                                                                   not rule.srcaddr.startswith("GEO:")
     ) | set(
         all_addresses[rule.dstaddr]    for rule    in all_rules    if rule.dstaddr != "ALL"
     ) | set(
@@ -400,6 +401,8 @@ def generate_setup(tables):
             def _filter_addr(cmd):
                 if addr == "ALL":
                     yield cmd
+                elif addr.startswith("GEO:"):
+                    yield dict(cmd, srcgeo=addr.replace("GEO:", ""))
                 elif cmd["cmd"] == "iptables":
                     if all_addresses[addr].v4 != '-':
                         yield dict(cmd, **{ "%saddr" % which_one : "%s_v4" % addr })
@@ -439,6 +442,8 @@ def generate_setup(tables):
             fmt += "-A '%(chain)s' "
             if cmd.get("iface"):
                 fmt += "-o '%(iface)s' "
+            if cmd.get("srcgeo"):
+                fmt += "-m geoip --src-cc '%(srcgeo)s' "
             if cmd.get("srcaddr"):
                 fmt += "-m set --match-set '%(srcaddr)s' src "
             if cmd.get("dstaddr"):

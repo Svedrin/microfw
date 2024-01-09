@@ -31,6 +31,7 @@
 # Src-Zone      Dest-Zone        Src-Address          Dst-Address            Service        Action
 
 ext             FW               ALL                  ALL                    ssh            accept
+ext             FW               GEO:DE               ALL                    smtp           accept
 ext             ALL              ALL                  ALL                    ALL            reject
 
 int             FW               ALL                  ALL                    ALL            reject

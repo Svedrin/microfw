@@ -2,10 +2,9 @@
 - hosts: all
   remote_user: root
   tasks:
-  - name: Install iptables
-    apt: name=iptables
-  - name: Install ipset
-    apt: name=ipset
+  - name: Install iptables, ipset and the GeoIP modules
+    apt:
+      pkg: ["iptables", "ipset", "xtables-addons-common", "libtext-csv-xs-perl"]
   - name: Copy systemd service
     copy:
       src:  ../etc/microfw.service

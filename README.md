@@ -54,6 +54,16 @@ Outbound traffic is always allowed.
 
 ICMP traffic is allowed by default. However, if you define an explicit rule to reject or drop traffic for `ALL` services, that includes ICMP.
 
+### GeoIP support
+
+In the rules file, the Source address can also be specified as `GEO:<country code>`, e.g. `GEO:DE`. MicroFW will then automatically generate rules using the [geoip module from xtables-addons](https://inai.de/projects/xtables-addons/geoip.php), and run the necessary commands to refresh the GeoIP index when applying rules.
+
+For this to work, run the following commands to ensure dependencies are in place:
+
+    apt install xtables-addons-common libtext-csv-xs-perl
+
+The rest will be taken care of by MicroFW.
+
 ## Virtuals
 
 A list of virtual services to expose via DNAT.

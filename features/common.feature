@@ -30,6 +30,8 @@ Feature: Stuff where none of the more specific features matter.
         ipset add    'mumble_tcp' '64738'
         ipset create 'mumble_udp' bitmap:port range 1-65535
         ipset add    'mumble_udp' '64738'
+        ipset create 'smtp_tcp' bitmap:port range 1-65535
+        ipset add    'smtp_tcp' '25'
 
         iptables  -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
         ip6tables -A MFWINPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
@@ -74,6 +76,9 @@ Feature: Stuff where none of the more specific features matter.
 
         iptables  -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
         ip6tables -A MFWINPUT -i 'tun0' -p 'ospf' -j ACCEPT
+
+        iptables  -A 'ext_inp' -m geoip --src-cc 'DE' -p 'tcp' -m set --match-set 'smtp_tcp' dst -j accept
+        ip6tables -A 'ext_inp' -m geoip --src-cc 'DE' -p 'tcp' -m set --match-set 'smtp_tcp' dst -j accept
 
         iptables  -A 'ext_fwd' -o 'eth0' -j reject
         iptables  -A 'ext_fwd' -o 'eth1' -j reject
