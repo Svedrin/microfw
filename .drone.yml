@@ -7,11 +7,11 @@ steps:
   image: alpine:latest
   commands:
   - apk add --no-cache bash python3 py3-pip
-  - pip3 install --no-cache-dir behave
+  - pip3 install --break-system-packages --no-cache-dir behave
   - python3 -m behave
   - ./features/teardown.sh
 ---
 kind: signature
-hmac: 0685168871e886df75bb3b67a8da3d6a3e8e6db3c517d7b76e167e810eaf3aa2
+hmac: cc94542faa1deb9bef1b588874c60e6b744e258509dfb63187a0ca2317cd2e26
 
 ...
