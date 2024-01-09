@@ -8,7 +8,6 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
     COMMAND="invalid"
     ETC_DIR="/etc/microfw"
     VAR_DIR="/var/lib/microfw"
-    SHM_DIR="/dev/shm/microfw"
 
     while [ -n "${1:-}" ]; do
         case "$1" in
@@ -34,7 +33,7 @@ if [ -z "${RUNNING_IN_CI:-}" ]; then
 
             -n|--node)
                 ETC_DIR="nodes/$2"
-                VAR_DIR=$ETC_DIR
+                VAR_DIR="$ETC_DIR"
                 if [ ! -d "$ETC_DIR" ]; then
                     echo >&2 "$ETC_DIR does not exist"
                     exit 2
@@ -148,7 +147,6 @@ function generate_setup() {
 
 function compile() {
     mkdir -p $VAR_DIR
-    mkdir -p $SHM_DIR
     generate_setup     > $VAR_DIR/setup.sh
     chmod +x $VAR_DIR/setup.sh
 }
