@@ -164,7 +164,7 @@ function apply() {
         fi
         # Check if we have an outdated index (older than 15min) or none at all
         if [ ! -e $VAR_DIR/dbip-country-lite.csv ] || \
-           [ -n "$(find $VAR_DIR/dbip-country-lite.csv -cmin +15)" ] || \
+           [ -n "$(find $VAR_DIR/dbip-country-lite.csv -cmin +60)" ] || \
            [ -z "$(find /usr/share/xt_geoip/ -mindepth 1)" ]
         then
             cd $VAR_DIR
