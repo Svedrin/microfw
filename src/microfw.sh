@@ -162,9 +162,9 @@ function apply() {
             echo >&2 "    apt install xtables-addons-common libtext-csv-xs-perl"
             exit 1
         fi
-        # Check if we have an outdated index (older than 60min) or none at all
+        # Check if we have an outdated index (older than a day) or none at all
         if [ ! -e $VAR_DIR/dbip-country-lite.csv ] || \
-           [ -n "$(find $VAR_DIR/dbip-country-lite.csv -cmin +60)" ] || \
+           [ -n "$(find $VAR_DIR/dbip-country-lite.csv -cmin +1440)" ] || \
            [ -z "$(find /usr/share/xt_geoip/ -mindepth 1)" ]
         then
             echo "Refreshing GeoIP database, this can take a while."
